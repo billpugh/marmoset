@@ -18,6 +18,7 @@ public class BuildServer implements Comparable<BuildServer> {
 	@CheckForNull
 	String courses;
 	String remoteHost;
+	String javaVersion;
 	Timestamp lastRequest;
 	@Submission.PK final int lastRequestSubmissionPK;
 	@CheckForNull
@@ -31,7 +32,7 @@ public class BuildServer implements Comparable<BuildServer> {
 	public static final String TABLE_NAME = "buildservers";
 
 	static final String[] ATTRIBUTE_NAME_LIST = { "buildserver_pk", "name",
-			"remote_host", "courses", "last_request", "last_request_submission_pk", "last_job", "last_success", "system_load", "kind" };
+			"remote_host", "courses", "java_version", "last_request", "last_request_submission_pk", "last_job", "last_success", "system_load", "kind" };
 
 	public static final String ATTRIBUTES = Queries.getAttributeList(
 			TABLE_NAME, ATTRIBUTE_NAME_LIST);
@@ -41,6 +42,7 @@ public class BuildServer implements Comparable<BuildServer> {
 		name = rs.getString(startingFrom++);
 		remoteHost = rs.getString(startingFrom++);
 		courses = rs.getString(startingFrom++);
+		javaVersion = rs.getString(startingFrom++);
 		lastRequest = rs.getTimestamp(startingFrom++);
 		lastRequestSubmissionPK = Submission.asPK(rs.getInt(startingFrom++));
 		lastJob = rs.getTimestamp(startingFrom++);
@@ -67,6 +69,10 @@ public class BuildServer implements Comparable<BuildServer> {
 		return courses;
 	}
 
+	public String getJavaVersion() {
+		return javaVersion;
+	}
+	
 	public String getRemoteHost() {
 		return remoteHost;
 	}
@@ -103,14 +109,14 @@ public class BuildServer implements Comparable<BuildServer> {
 	}
 
 	public static void submissionRequestedNoneAvailable(Connection conn, String name,
-			String remoteHost, @CheckForNull String courses,
+			String remoteHost, @CheckForNull String courses, String javaVersion,
 			Timestamp lastRequest, String load) throws SQLException {
 		String query = Queries.makeInsertOrUpdateStatement(new String[] {
-				"name", "remote_host", "courses", "last_request", "last_request_submission_pk", "system_load", "kind"},
+				"name", "remote_host", "courses", "java_version", "last_request", "last_request_submission_pk", "system_load", "kind"},
 				TABLE_NAME);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setStatement(stmt, name, remoteHost, courses, lastRequest, 0,
+			Queries.setStatement(stmt, name, remoteHost, courses, javaVersion, lastRequest, 0,
 					load, TestRun.Kind.UNKNOWN, remoteHost, courses, lastRequest, 0,
 					load, TestRun.Kind.UNKNOWN);
 			stmt.executeUpdate();
@@ -119,14 +125,14 @@ public class BuildServer implements Comparable<BuildServer> {
 		}
 	}
 	public static void submissionRequestedAndProvided(Connection conn, String name,
-			String remoteHost, @CheckForNull String courses,
+			String remoteHost, @CheckForNull String courses, String javaVersion,
 			Timestamp now, String load, Submission submission, TestRun.Kind kind) throws SQLException {
 		String query = Queries.makeInsertOrUpdateStatement(new String[] {
-				"name", "remote_host", "courses", "last_request", "last_request_submission_pk", "last_job", "system_load", "kind" },
+				"name", "remote_host", "courses", "java_version", "last_request", "last_request_submission_pk", "last_job", "system_load", "kind" },
 				TABLE_NAME);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setStatement(stmt, name, remoteHost, courses, now,submission.getSubmissionPK(), now,load, kind,
+			Queries.setStatement(stmt, name, remoteHost, courses, javaVersion, now,submission.getSubmissionPK(), now,load, kind,
 					remoteHost, courses, now, submission.getSubmissionPK(), now,load, kind);
 			stmt.executeUpdate();
 		} finally {

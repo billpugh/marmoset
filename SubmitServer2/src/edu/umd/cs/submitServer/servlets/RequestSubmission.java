@@ -108,6 +108,8 @@ public class RequestSubmission extends SubmitServerServlet {
     String load = multipartRequest.getOptionalStringParameter("load");
     if (load == null)
       load = "unknown";
+    String javaVersion = multipartRequest.getOptionalStringParameter("javaVersion");
+    
     String projectNumber = multipartRequest.getOptionalStringParameter("projectNumber");
 
     Kind kind = Kind.UNKNOWN;
@@ -137,7 +139,7 @@ public class RequestSubmission extends SubmitServerServlet {
 
         if (allowedCourses.isEmpty()) {
           if (isUniversalBuildServer(courseKey)) {
-            BuildServer.submissionRequestedNoneAvailable(conn, hostname, remoteHost, courseKey, now, load);
+            BuildServer.submissionRequestedNoneAvailable(conn, hostname, remoteHost, courseKey, javaVersion, now, load);
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, NO_SUBMISSIONS_AVAILABLE_MESSASGE);
             return;
           }
@@ -238,7 +240,7 @@ public class RequestSubmission extends SubmitServerServlet {
               break findSubmission;
             }
 
-            BuildServer.submissionRequestedNoneAvailable(conn, hostname, remoteHost, courseKey, now, load);
+            BuildServer.submissionRequestedNoneAvailable(conn, hostname, remoteHost, courseKey, javaVersion, now, load);
             int waitFor = connectionTimeout - 1000;
             if (waitFor > 1000) {
 
@@ -381,7 +383,7 @@ public class RequestSubmission extends SubmitServerServlet {
 
       OutputStream out = response.getOutputStream();
       IO.copyStream(bais, out);
-      BuildServer.submissionRequestedAndProvided(conn, hostname, remoteHost, courseKey, now, load, submission, kind);
+      BuildServer.submissionRequestedAndProvided(conn, hostname, remoteHost, courseKey, javaVersion, now, load, submission, kind);
     } catch (SQLException e) {
       handleSQLException(e);
       throw new ServletException(e);

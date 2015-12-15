@@ -78,6 +78,7 @@ CREATE TABLE `file_contents` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 
-ALTER TABLE  `buildservers` ADD  `kind` VARCHAR( 40 ) NOT NULL DEFAULT  'UNKNOWN';
 
 ALTER TABLE  `student_submit_status` ADD  `last_build_request_timestamp` DATETIME NULL DEFAULT NULL;
+
+ALTER TABLE  `buildservers` ADD  `java_version` VARCHAR( 40 ) NOT NULL DEFAULT  'UNKNOWN';
