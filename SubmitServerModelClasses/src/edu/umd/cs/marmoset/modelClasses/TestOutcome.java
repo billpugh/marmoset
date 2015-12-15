@@ -126,6 +126,7 @@ public class TestOutcome implements Serializable {
     public static final @OutcomeType String HUH = asOutcomeType("huh");
     public static final @OutcomeType String MISSING_COMPONENT = asOutcomeType("missing_component");
     public static final @OutcomeType String TIMEOUT = asOutcomeType("timeout");
+    public static final @OutcomeType String FORK_BOMB = asOutcomeType("fork_bomb");
 	public static final @OutcomeType String UNCOVERED_METHOD = asOutcomeType("uncovered_method");
 
 	
