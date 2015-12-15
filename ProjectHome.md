@@ -1,0 +1,1 @@
+Provides support for on-line submission testing, static analysis, code coverage, peer and instructional code reviews and grading. Works with projects in any programming language.

@@ -1,0 +1,12 @@
+  * [Getting Started](GettingStarted.md)
+  * [Submit Server](SubmitServerSetup.md)
+    * [Courses](CourseCreation.md)
+      * [Projects](Projects.md)
+      * [Submitting](Submitting.md)
+      * [Code Reviews](CodeReviews.md)
+  * [Build Server](BuildServerSetup.md)
+  * [Executable test cases](ExecutableTests.md)
+  * Property file reference
+    * [Submit Server config properties](WebProperties.md)
+    * [Test setup properties](TestSetupProperties.md)
+    * [Build server config properties](BuildServerConfig.md)
