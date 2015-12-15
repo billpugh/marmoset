@@ -196,7 +196,7 @@ public final class ProcessTree {
         log.info(process);
     }
 
-    private void killProcessTree(int rootPid, int signal) throws IOException {
+    private int killProcessTree(int rootPid, int signal) throws IOException {
         Set<Integer> result = findTree(rootPid);
         Set<Integer> unrooted = findTree(1);
 
@@ -214,7 +214,8 @@ public final class ProcessTree {
 
         result.addAll(unrooted);
         if (result.isEmpty())
-            return;
+            return 0;
+        
         log.info("Halting process tree starting at " + rootPid + " which is "
                 + result);
         while (true) {
@@ -230,6 +231,8 @@ public final class ProcessTree {
             log.info("process tree starting at " + rootPid + " changed to "
                     + result);
         }
+        int resultSize = result.size();
+        
         killProcesses("-KILL", result);
         pause(1000);
         log.debug("process tree should now be dead");
@@ -243,6 +246,7 @@ public final class ProcessTree {
             if (!result.isEmpty())
                 log.error("super zombie processes: " + result);
         }
+        return resultSize;
     }
 
     /**
@@ -250,15 +254,15 @@ public final class ProcessTree {
      * @throws IOException
      * @throws InterruptedException
      */
-    private void killProcesses(String signal, Set<Integer> result)
+    private void killProcesses(String signal, Set<Integer> pids)
             throws IOException {
-        if (result.isEmpty()) {
+        if (pids.isEmpty()) {
             return;
         }
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("/bin/kill");
         cmd.add(signal);
-        for (Integer i : result)
+        for (Integer i : pids)
             cmd.add(i.toString());
         ProcessBuilder b = new ProcessBuilder(cmd);
         int exitCode = execute(b);
