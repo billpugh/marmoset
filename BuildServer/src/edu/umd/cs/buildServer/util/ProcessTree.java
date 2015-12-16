@@ -121,7 +121,14 @@ public final class ProcessTree {
             throw new RuntimeException(e);
         }
     }
-
+    private void computeChildrenSwallowErrors() {
+    	 
+    try {
+        computeChildren();
+        } catch (Throwable e) {
+        	log.debug("Exception while recomputing children after stop", e);
+        }
+    }
     private void findTree(Set<Integer> found, int pid) {
         if (!found.add(pid))
             return;
@@ -156,13 +163,9 @@ public final class ProcessTree {
         int pid = MarmosetUtilities.getPid(process);
 //        log.info("Killing process tree for pid " + pid);
 
+          
         try {
-            this.computeChildren();
-        } catch (Exception e) {
-            log.warn("Error trying to kill process tree for " + pid, e);
-        }
-        
-        try {
+        	computeChildrenSwallowErrors();
             this.killProcessTree(pid, Signal.KILL);
         } catch (Exception e) {
             log.warn("Error trying to kill process tree for " + pid, e);
@@ -215,7 +218,7 @@ public final class ProcessTree {
         while (true) {
             killProcesses(Signal.STOP, result);
             pause(100);
-            computeChildren();
+            computeChildrenSwallowErrors();
             Set<Integer> r = findTree(rootPid);
             Set<Integer> u = findTree(1);
             r.addAll(u);
@@ -230,7 +233,7 @@ public final class ProcessTree {
         killProcesses(signal, result);
         pause(1000);
         log.debug("process tree should now be dead");
-        computeChildren();
+        computeChildrenSwallowErrors();
         result.retainAll(children.keySet());
         if (!result.isEmpty()) {
             log.error("Undead processes: " + result);
