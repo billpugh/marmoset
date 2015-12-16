@@ -158,6 +158,11 @@ public final class ProcessTree {
 
         try {
             this.computeChildren();
+        } catch (Exception e) {
+            log.warn("Error trying to kill process tree for " + pid, e);
+        }
+        
+        try {
             this.killProcessTree(pid, Signal.KILL);
         } catch (Exception e) {
             log.warn("Error trying to kill process tree for " + pid, e);
