@@ -104,14 +104,14 @@ public final class ProcessTree {
             int psPid = MarmosetUtilities.getPid(p);
             p.getOutputStream().close();
             Scanner s = new Scanner(p.getInputStream());
-            log.trace("Starting ps");
+            log.warn("Starting ps");
             String header = s.nextLine();
-            log.trace("ps header: " + header);
+            log.warn("ps header: " + header);
             callback.started();
 
             while (s.hasNext()) {
                 String txt = s.nextLine();
-                log.trace(txt);
+                log.warn(txt);
                 try {
                 	int pid = Integer.parseInt(txt.substring(0, 5).trim());
                     int ppid = Integer.parseInt(txt.substring(6, 11).trim());
@@ -136,7 +136,7 @@ public final class ProcessTree {
                 log.error(s.nextLine());
             }
             s.close();
-            log.trace("Finished ps");
+            log.warn("Finished ps");
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
