@@ -43,7 +43,7 @@ public final class ProcessTree {
         user = System.getProperty("user.name");
         this.startTime = startTime
                 - TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS);
-        computeChildren();
+        computeChildren(new MyAnalyzePS(), log);
     }
 
     // example date: Fri Apr 13 00:02:43 2012
@@ -54,14 +54,43 @@ public final class ProcessTree {
         }
     };
 
-    private void computeChildren() {
-      
-        try {
-            ProcessBuilder b = new ProcessBuilder(
-                    new String[] { "/bin/ps", "xww", "-o",
-                            "pid,ppid,lstart,user,state,pcpu,cputime,args" });
+    interface AnalyzePS {
+    	public void started();
+    	public void process(int pid, int ppid, int pgrp, String usr, char state, Date started, String txt); 
+  
+    }
+    class MyAnalyzePS implements AnalyzePS{
 
-            Process p;
+    	 final int rootPid = MarmosetUtilities.getPid();
+         
+		@Override
+		public void started() {
+			live.clear();
+		}
+
+		@Override
+		public void process(int pid, int ppid, int pgrp, String usr, char state, Date started, String txt) {
+			 if (!user.equals(usr)) 
+				 return;
+			 if (started.getTime() < startTime) 
+				 return;
+			 if (rootPid == pid) 
+				 return;
+             live.add(pid);
+             children.put(ppid, pid);
+             info.put(pid, txt);
+		}
+    	
+    	
+    }
+    public static void computeChildren(AnalyzePS callback, Logger log) {
+        ProcessBuilder b = new ProcessBuilder(
+                new String[] { "/bin/ps", "xww", "-o",
+                        "pid,ppid,pgrp,lstart,user,state,pcpu,cputime,args" });
+
+        Process p = null;
+        try {
+    
             try {
                 p = b.start();
             } catch (RuntimeException t) {
@@ -73,58 +102,54 @@ public final class ProcessTree {
             }
             
             int psPid = MarmosetUtilities.getPid(p);
-            int rootPid = MarmosetUtilities.getPid();
             p.getOutputStream().close();
             Scanner s = new Scanner(p.getInputStream());
+            log.trace("Starting ps");
             String header = s.nextLine();
-            // log.trace("ps header: " + header);
-            live.clear();
+            log.trace("ps header: " + header);
+            callback.started();
 
             while (s.hasNext()) {
                 String txt = s.nextLine();
-                if (!txt.contains(user))
-                    continue;
-
+                log.trace(txt);
                 try {
-                    int pid = Integer.parseInt(txt.substring(0, 5).trim());
+                	int pid = Integer.parseInt(txt.substring(0, 5).trim());
                     int ppid = Integer.parseInt(txt.substring(6, 11).trim());
-                    Date started = DATE_FORMAT.get().parse(
-                            txt.substring(12, 36));
-                    if (psPid == pid || rootPid == pid)
+                    int pgrp = Integer.parseInt(txt.substring(12, 17).trim());
+                     Date started = DATE_FORMAT.get().parse(
+                            txt.substring(18, 42));
+                     String user = txt.substring(43,51).trim();
+                     char state = txt.charAt(52);
+                     
+                    if (psPid == pid)
                         continue;
-                    if (started.getTime() < startTime) {
-                        if (ppid != 1)
-                            continue;
-//                        log.debug("old orphan " + txt);
-                        continue;
-                    }
-//                    log.info(txt);
-                    live.add(pid);
-                    children.put(ppid, pid);
-                    info.put(pid, txt);
+                    callback.process(pid,  ppid, pgrp, user, state, started, txt);
                 } catch (Exception e) {
                     log.error("Error while building process treee, parsing "
                             + txt, e);
                 }
 
             }
-//            log.info("finished ps with " + live);
-
             s.close();
             s = new Scanner(p.getErrorStream());
             while (s.hasNext()) {
                 log.error(s.nextLine());
             }
             s.close();
-            p.destroy();
+            log.trace("Finished ps");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+        	if (p != null)
+        		p.destroy();
         }
     }
+    
+    
     private void computeChildrenSwallowErrors() {
     	 
     try {
-        computeChildren();
+        computeChildren(new MyAnalyzePS(), log);
         } catch (Throwable e) {
         	log.debug("Exception while recomputing children after stop", e);
         }
@@ -238,7 +263,7 @@ public final class ProcessTree {
         if (!result.isEmpty()) {
             log.error("Undead processes: " + result);
             killProcesses(signal, result);
-            computeChildren();
+            computeChildrenSwallowErrors();
             result.retainAll(children.keySet());
             if (!result.isEmpty())
                 log.error("super zombie processes: " + result);
