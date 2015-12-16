@@ -369,8 +369,12 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 		// Ensure we have a submission PK.
 		String submissionPK = getRequiredHeaderValue(method,
 				HttpHeaders.HTTP_SUBMISSION_PK_HEADER);
-		if (submissionPK == null)
+		if (submissionPK == null) {
+			if (specificSubmission != null)
+				getLog().error(
+						"Server did not return submission " + specificSubmission);
 			return null;
+		}
 
 		// Ensure we have a project PK.
 		String testSetupPK = specificTestSetup != null ? specificTestSetup : getTestSetupPK(method);
