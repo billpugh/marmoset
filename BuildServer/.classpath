@@ -16,6 +16,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-lang-2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava-11.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hamcrest-core-1.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SubmitServerModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/diffOutputStream"/>
 	<classpathentry kind="output" path="build/classes"/>

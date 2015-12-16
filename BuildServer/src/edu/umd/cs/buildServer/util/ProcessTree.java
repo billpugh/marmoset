@@ -22,6 +22,8 @@ import org.apache.log4j.Logger;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import edu.umd.cs.buildServer.util.jni.ProcessKiller;
+import edu.umd.cs.buildServer.util.jni.ProcessKiller.Signal;
 import edu.umd.cs.marmoset.utilities.MarmosetUtilities;
 
 public final class ProcessTree {
@@ -53,8 +55,7 @@ public final class ProcessTree {
     };
 
     private void computeChildren() {
-        live.clear();
-
+      
         try {
             ProcessBuilder b = new ProcessBuilder(
                     new String[] { "/bin/ps", "xww", "-o",
@@ -77,6 +78,8 @@ public final class ProcessTree {
             Scanner s = new Scanner(p.getInputStream());
             String header = s.nextLine();
             // log.trace("ps header: " + header);
+            live.clear();
+
             while (s.hasNext()) {
                 String txt = s.nextLine();
                 if (!txt.contains(user))
@@ -119,20 +122,6 @@ public final class ProcessTree {
         }
     }
 
-    private void killProcess(int pid, int signal) throws IOException,
-            InterruptedException {
-        ProcessBuilder b = new ProcessBuilder(new String[] { "/bin/kill",
-                "-" + signal, Integer.toString(pid) });
-        execute(b);
-
-    }
-
-    private void killProcess(int pid) throws IOException, InterruptedException {
-        ProcessBuilder b = new ProcessBuilder(new String[] { "/bin/kill",
-                Integer.toString(pid) });
-        execute(b);
-    }
-
     private void findTree(Set<Integer> found, int pid) {
         if (!found.add(pid))
             return;
@@ -169,7 +158,7 @@ public final class ProcessTree {
 
         try {
             this.computeChildren();
-            this.killProcessTree(pid, 9);
+            this.killProcessTree(pid, Signal.KILL);
         } catch (Exception e) {
             log.warn("Error trying to kill process tree for " + pid, e);
         } finally {
@@ -196,7 +185,7 @@ public final class ProcessTree {
         log.info(process);
     }
 
-    private int killProcessTree(int rootPid, int signal) throws IOException {
+    private int killProcessTree(int rootPid, Signal signal) throws IOException {
         Set<Integer> result = findTree(rootPid);
         Set<Integer> unrooted = findTree(1);
 
@@ -219,7 +208,7 @@ public final class ProcessTree {
         log.info("Halting process tree starting at " + rootPid + " which is "
                 + result);
         while (true) {
-            killProcesses("-STOP", result);
+            killProcesses(Signal.STOP, result);
             pause(100);
             computeChildren();
             Set<Integer> r = findTree(rootPid);
@@ -233,14 +222,14 @@ public final class ProcessTree {
         }
         int resultSize = result.size();
         
-        killProcesses("-KILL", result);
+        killProcesses(signal, result);
         pause(1000);
         log.debug("process tree should now be dead");
         computeChildren();
         result.retainAll(children.keySet());
         if (!result.isEmpty()) {
             log.error("Undead processes: " + result);
-            killProcesses("-KILL", result);
+            killProcesses(signal, result);
             computeChildren();
             result.retainAll(children.keySet());
             if (!result.isEmpty())
@@ -254,20 +243,16 @@ public final class ProcessTree {
      * @throws IOException
      * @throws InterruptedException
      */
-    private void killProcesses(String signal, Set<Integer> pids)
+    private void killProcesses(Signal signal, Set<Integer> pids)
             throws IOException {
         if (pids.isEmpty()) {
             return;
         }
-        ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("/bin/kill");
-        cmd.add(signal);
-        for (Integer i : pids)
-            cmd.add(i.toString());
-        ProcessBuilder b = new ProcessBuilder(cmd);
-        int exitCode = execute(b);
-        if (exitCode != 0)
-            log.warn("exit code from kill " + exitCode);
+        for (Integer pid : pids) {
+        	 int exitCode = ProcessKiller.kill(pid, signal);
+        	 log.warn("exit code from killing " + pid + " is " + exitCode);
+        }
+   
     }
 
     private void drainToLog(final InputStream in) {

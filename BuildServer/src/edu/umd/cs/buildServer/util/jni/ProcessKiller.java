@@ -16,7 +16,8 @@ public class ProcessKiller {
 		ABORT("abort",6),
 		KILL("non-catchable, non-ignorable kill",9),    
 		ALARM("alarm clock",14),
-		TERMINATION("software termination signal",15);
+		TERMINATION("software termination signal",15),
+		STOP("stop", 19);
 
 		final String msg;
 		final int value;
