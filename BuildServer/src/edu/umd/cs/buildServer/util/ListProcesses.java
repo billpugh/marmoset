@@ -147,7 +147,7 @@ public class ListProcesses {
 			if (pid != pid0) {
 				log.error("Pid " + pid + " doesn't match " + contents);
 			}
-			log.trace("proc: " + contents);
+			log.info("proc: " + contents);
 			callback.process(pid, ppid, pgrp, state, now, filename);
 			
 		}

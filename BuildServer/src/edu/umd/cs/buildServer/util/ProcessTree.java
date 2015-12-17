@@ -82,8 +82,9 @@ public final class ProcessTree {
     	
     }
     private void computeChildren() throws IOException {
-    	 
+    	   log.info("Computing children {");
            ListProcesses.listProcesses(new MyAnalyzePS(), log);
+           log.info("} Done Computing children");
 
     }
     private void findTree(Set<Integer> found, int pid) {
