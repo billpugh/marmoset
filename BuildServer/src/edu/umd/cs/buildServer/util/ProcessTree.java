@@ -43,7 +43,7 @@ public final class ProcessTree {
         this.startTime = startTime
                 - TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS);
         try {
-        computeChildren();
+        examineProcesses();
         } catch (Throwable t) {
         	emergancyShutdown(MarmosetUtilities.getPid(process),  t);
         }
@@ -64,6 +64,7 @@ public final class ProcessTree {
 		@Override
 		public void started() {
 			live.clear();
+			log.info("Starting process list");
 		}
 
 		@Override
@@ -81,10 +82,10 @@ public final class ProcessTree {
     	
     	
     }
-    private void computeChildren() throws IOException {
+    private void examineProcesses() throws IOException {
     	   log.info("Computing children {");
            ListProcesses.listProcesses(new MyAnalyzePS(), log);
-           log.info("} Done Computing children");
+           log.info("} Done Computing children, have " + live.size() + " live processes ");
 
     }
     private void findTree(Set<Integer> found, int pid) {
@@ -97,11 +98,17 @@ public final class ProcessTree {
     private Set<Integer> findTree(int rootPid) {
         Set<Integer> result = new LinkedHashSet<Integer>();
         findTree(result, rootPid);
+        log.info("Have " + result.size() + " children");
+        log.info("Have " + live.size() + " live processes");
         for(Map.Entry<Integer, Integer> e : pgroup.entrySet()) {
         	if (e.getValue().equals(rootPid))
         		result.add(e.getKey());
         }
+        log.info("After process group, have  " + result.size() + " children");
+        
         result.retainAll(live);
+        log.info("After retain, have  " + result.size() + " children");
+        
         return result;
     }
 
@@ -135,7 +142,7 @@ public final class ProcessTree {
 
           
         try {
-        	computeChildren();
+        	examineProcesses();
             this.killProcessTree(pid, Signal.KILL);
             process.destroy();
         } catch (Throwable e) {
@@ -185,7 +192,7 @@ public final class ProcessTree {
         while (true) {
             killProcesses(Signal.STOP, result);
             pause(100);
-            computeChildren();
+            examineProcesses();
             Set<Integer> r = findTree(rootPid);
             Set<Integer> u = findTree(1);
             r.addAll(u);
@@ -200,13 +207,13 @@ public final class ProcessTree {
         killProcesses(signal, result);
         pause(1000);
         log.debug("process tree should now be dead");
-        computeChildren();
-        result.retainAll(children.keySet());
+        examineProcesses();
+        result.retainAll(live);
         if (!result.isEmpty()) {
             log.error("Undead processes: " + result);
             killProcesses(signal, result);
-            computeChildren();
-            result.retainAll(children.keySet());
+            examineProcesses();
+            result.retainAll(live);
             if (!result.isEmpty()) {
                 emergancyShutdown(rootPid, new IOException("super zombie processes: " + result));
             }
@@ -261,27 +268,6 @@ public final class ProcessTree {
         t.setDaemon(true);
         t.start();
 
-    }
-
-    private int execute(ProcessBuilder b) throws IOException {
-        b.redirectErrorStream(true);
-        Process p = b.start();
-        p.getOutputStream().close();
-        drainToLog(p.getInputStream());
-        boolean isInterrupted = Thread.interrupted();
-        int exitCode;
-        while (true)
-            try {
-                exitCode = p.waitFor();
-                break;
-            } catch (InterruptedException e) {
-                isInterrupted = true;
-            }
-        p.getInputStream().close();
-        p.destroy();
-        if (isInterrupted)
-            Thread.currentThread().interrupt();
-        return exitCode;
     }
 
 }
