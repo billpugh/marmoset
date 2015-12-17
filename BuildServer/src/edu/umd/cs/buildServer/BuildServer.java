@@ -535,10 +535,7 @@ public abstract class BuildServer implements ConfigurationKeys {
                     downloadProjectJarFile(projectSubmission);
                     // log.warn
                 }
-                if (getDownloadOnly()) {
-                	 log.warn("Download only");
-                    return NO_WORK;
-                } 
+               
 
                 log.trace("starting build and test");
                 long started = System.currentTimeMillis();
@@ -869,6 +866,10 @@ public abstract class BuildServer implements ConfigurationKeys {
 		BuilderAndTesterFactory<T> builderAndTesterFactory = projectSubmission
 				.createBuilderAndTesterFactory();
 
+		 if (getDownloadOnly()) {
+        	 log.error("Download only; skipping build and test");
+        	 return;
+        } 
 		builderAndTesterFactory.buildAndTest(buildDirectory, testPropertiesExtractor);
 	}
 
