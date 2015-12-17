@@ -160,7 +160,19 @@ public class ListProcesses {
 	}
 
 	private static String getLoginUID(File p) {
-		return getLine(new File(p, "loginuid"));
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(p, "status")))) {
+			while (true) {
+				String s = br.readLine();
+				if (s == null)
+					throw new IOException("Did not find user id");
+				if (s.startsWith("Uid:")) {
+					String fields[] = s.split("\t");
+					return fields[1];
+				}
+			}
+		} catch (IOException e) {
+			return "";
+		}
 	}
 
 }
