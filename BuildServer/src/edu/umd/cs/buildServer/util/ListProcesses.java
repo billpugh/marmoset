@@ -122,7 +122,9 @@ public class ListProcesses {
 			throw new IOException("/proc not available");
 		
 		int myPid = MarmosetUtilities.getPid();
+		log.info("My pid: " + myPid );
 		String myUserId = getLoginUID(new File(proc, Integer.toString(myPid)));
+		log.info("My userID: " + myUserId );
 		Date now = new Date();
 		callback.started();
 		for(File p : proc.listFiles()) {
@@ -147,7 +149,7 @@ public class ListProcesses {
 			if (pid != pid0) {
 				log.error("Pid " + pid + " doesn't match " + contents);
 			}
-			log.info("proc: " + contents);
+			log.info("proc: " + userid + " :: " + contents);
 			callback.process(pid, ppid, pgrp, state, now, filename);
 			
 		}
