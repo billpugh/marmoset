@@ -544,6 +544,8 @@ public abstract class BuildServer implements ConfigurationKeys {
                 try {
                     buildAndTestProject(projectSubmission);
 
+                    if (getDownloadOnly()) 
+                    	return NO_WORK;
                     // Building and testing was successful.
                     // ProjectSubmission should have had its public, release,
                     // secret and student
@@ -868,7 +870,7 @@ public abstract class BuildServer implements ConfigurationKeys {
 
 		 if (getDownloadOnly()) {
         	 log.error("Download only; skipping build and test");
-        	 return;
+        	 builderAndTesterFactory.setDownloadOnly();
         } 
 		builderAndTesterFactory.buildAndTest(buildDirectory, testPropertiesExtractor);
 	}
