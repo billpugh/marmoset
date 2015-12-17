@@ -46,11 +46,11 @@ public class ListProcesses {
 		else
 			listProcessesUsingPS(callback, log);
 	}
-	public static void listProcessesUsingPS(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
+	private static void listProcessesUsingPS(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
 	    ProcessBuilder b = new ProcessBuilder(
 	            new String[] { "/bin/ps", "xww", "-o",
 	                    "pid,ppid,pgid,lstart,user,state,pcpu,cputime,args" });
-	
+	    System.out.println("Listing output using PS");
 	    String thisUser = System.getProperty("user.name");
 	    Process p = null;
 	    try {
@@ -117,10 +117,12 @@ public class ListProcesses {
 		}
 	}
 
-	public static void listProcessesUsingProc(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
+	private static void listProcessesUsingProc(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
 		File proc = new File("/proc");
 		if (!proc.isDirectory()) 
 			throw new IOException("/proc not available");
+		System.out.println("Listing output using Proc");
+	    
 		int myPid = MarmosetUtilities.getPid();
 		String myUserId = getLoginUID(new File(proc, Integer.toString(myPid)));
 		Date now = new Date();
@@ -133,6 +135,7 @@ public class ListProcesses {
 			} catch (NumberFormatException e) {
 				continue;
 			}
+
 			String userid = getLoginUID(p);
 			if (!myUserId.equals(userid))
 				continue;
@@ -143,10 +146,11 @@ public class ListProcesses {
 			char state = fields[2].charAt(0);
 			int ppid =  Integer.parseInt(fields[3]);
 			int pgrp =  Integer.parseInt(fields[4]);
-
+			if (pid != pid0) {
+				log.error("Pid " + pid + " doesn't match " + contents);
+			}
 			
-			callback.process(pid0, ppid, pgrp, state, now, contents);
-			
+			callback.process(pid, ppid, pgrp, state, now, filename);
 			
 		}
 	    ProcessBuilder b = new ProcessBuilder(
