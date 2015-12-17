@@ -50,7 +50,6 @@ public class ListProcesses {
 	    ProcessBuilder b = new ProcessBuilder(
 	            new String[] { "/bin/ps", "xww", "-o",
 	                    "pid,ppid,pgid,lstart,user,state,pcpu,cputime,args" });
-	    System.out.println("Listing output using PS");
 	    String thisUser = System.getProperty("user.name");
 	    Process p = null;
 	    try {
@@ -121,8 +120,7 @@ public class ListProcesses {
 		File proc = new File("/proc");
 		if (!proc.isDirectory()) 
 			throw new IOException("/proc not available");
-		System.out.println("Listing output using Proc");
-	    
+		
 		int myPid = MarmosetUtilities.getPid();
 		String myUserId = getLoginUID(new File(proc, Integer.toString(myPid)));
 		Date now = new Date();
@@ -153,65 +151,6 @@ public class ListProcesses {
 			callback.process(pid, ppid, pgrp, state, now, filename);
 			
 		}
-	    ProcessBuilder b = new ProcessBuilder(
-	            new String[] { "/bin/ps", "xww", "-o",
-	                    "pid,ppid,pgrp,lstart,user,state,pcpu,cputime,args" });
-	
-	    Process p = null;
-	    try {
-	
-	        try {
-	            p = b.start();
-	        } catch (RuntimeException t) {
-	            log.fatal("Unable to start ps", t);
-	            throw t;
-	        } catch (Error t) {
-	            log.fatal("Unable to start ps", t);
-	            throw t;
-	        }
-	        
-	        int psPid = MarmosetUtilities.getPid(p);
-	        p.getOutputStream().close();
-	        Scanner s = new Scanner(p.getInputStream());
-	        log.warn("Starting ps");
-	        String header = s.nextLine();
-	        log.warn("ps header: " + header);
-	        callback.started();
-	
-	        while (s.hasNext()) {
-	            String txt = s.nextLine();
-	            log.warn(txt);
-	            try {
-	            	int pid = Integer.parseInt(txt.substring(0, 5).trim());
-	                int ppid = Integer.parseInt(txt.substring(6, 11).trim());
-	                int pgrp = Integer.parseInt(txt.substring(12, 17).trim());
-	                 Date started = ProcessTree.DATE_FORMAT.get().parse(
-	                        txt.substring(18, 42));
-	                 String user = txt.substring(43,51).trim();
-	                 char state = txt.charAt(52);
-	                 
-	                if (psPid == pid)
-	                    continue;
-	                callback.process(pid,  ppid, pgrp, state, started, txt);
-	            } catch (Exception e) {
-	                log.error("Error while building process treee, parsing "
-	                        + txt, e);
-	            }
-	
-	        }
-	        s.close();
-	        s = new Scanner(p.getErrorStream());
-	        while (s.hasNext()) {
-	            log.error(s.nextLine());
-	        }
-	        s.close();
-	        log.warn("Finished ps");
-	    } catch (IOException e) {
-	        throw new RuntimeException(e);
-	    } finally {
-	    	if (p != null)
-	    		p.destroy();
-	    }
 	}
 
 	private static String getStat(File p) {
