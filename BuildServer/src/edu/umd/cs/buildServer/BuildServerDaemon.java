@@ -338,6 +338,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 		BuildServer.printURI(getLog(), method);
 
 		int responseCode = client.executeMethod(method);
+		getLog().warn("Server returned " + responseCode);
 		if (responseCode != HttpStatus.SC_OK) {
 			if (responseCode == HttpStatus.SC_SERVICE_UNAVAILABLE) {
 				getLog().trace("Server returned 503 (no work)");
@@ -421,7 +422,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 		
 		return projectSubmission;
 		} catch (ConnectException e) {
-			getLog().info("Unable to connect to " + getBuildServerConfiguration().getSubmitServerURL());
+			getLog().warn("Unable to connect to " + getBuildServerConfiguration().getSubmitServerURL());
 			return null;
 		}
 	}
