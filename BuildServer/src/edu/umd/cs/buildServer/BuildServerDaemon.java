@@ -847,7 +847,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
     
         if (line.hasOption("logLevel"))
             buildServer.getConfig().setProperty(LOG4J_THRESHOLD,
-                    line.getOptionValue(line.getOptionValue("logLevel")));
+                  line.getOptionValue("logLevel"));
 
         if (line.hasOption("downloadOnly")) {
        	 buildServer.setDownloadOnly(true);
