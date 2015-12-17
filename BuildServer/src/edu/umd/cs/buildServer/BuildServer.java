@@ -511,6 +511,8 @@ public abstract class BuildServer implements ConfigurationKeys {
             long start = System.currentTimeMillis();
             int result;
             try {
+            	log.trace("Build configuration");
+            	log.trace(getConfig());
                 if (getConfig().getBooleanProperty(DEBUG_SKIP_DOWNLOAD)) {
                     log.warn("Skipping download");
                 } else {
@@ -536,8 +538,9 @@ public abstract class BuildServer implements ConfigurationKeys {
                 if (getDownloadOnly()) {
                 	 log.warn("Download only");
                     return NO_WORK;
-                }
+                } 
 
+                log.trace("starting build and test");
                 long started = System.currentTimeMillis();
                 // Now we have the project and the testing jarfile.
                 // Build and test it.
@@ -979,7 +982,8 @@ public abstract class BuildServer implements ConfigurationKeys {
 		config.setProperty(DEBUG_DO_NOT_LOOP, "true");
 	}
 	public boolean getDownloadOnly() {
-		return config.getDebugProperty(DOWNLOAD_ONLY);
+		boolean result = config.getDebugProperty(DOWNLOAD_ONLY);
+		return result;
 	}
 	public boolean isQuiet() {
         return config.getOptionalBooleanProperty(SERVER_QUIET);

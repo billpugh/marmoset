@@ -850,6 +850,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
                   line.getOptionValue("logLevel"));
 
         if (line.hasOption("downloadOnly")) {
+        	System.out.println("Setting download only");
        	 buildServer.setDownloadOnly(true);
           once = true;
 	     }

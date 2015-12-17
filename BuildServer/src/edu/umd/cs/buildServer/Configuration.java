@@ -60,6 +60,9 @@ public class Configuration {
 		this.properties = new Properties();
 	}
 
+	public @Override String toString() {
+		return properties.toString();
+	}
 	
 
 	
