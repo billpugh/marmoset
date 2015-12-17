@@ -731,7 +731,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
                 .create( "course");
      Option downloadOnly = OptionBuilder
                 .withDescription(  "download only" )
-                .withLongOpt("download")
+                .withLongOpt("downloadOnly")
                 .create( "d");
        Option submission = OptionBuilder.withArgName( "submissionPK" )
                 .hasArg()
