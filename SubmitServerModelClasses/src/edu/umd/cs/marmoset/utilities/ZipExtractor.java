@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -82,7 +83,8 @@ public class ZipExtractor {
 	 */
 	public void extract(File directory) throws IOException, ZipExtractorException {
 		ZipFile z = new ZipFile(zipFile);
-
+		Pattern badName =  Pattern.compile("[\\p{Cntrl}<>]");
+		
 		try {
 			Enumeration<? extends ZipEntry> entries = z.entries();
 			while (entries.hasMoreElements()) {
@@ -91,7 +93,13 @@ public class ZipExtractor {
 				
 				if (!shouldExtract(entryName))
 					continue;
-
+				if (badName.matcher(entryName).find()) {
+					if (entry.getSize() > 0) 
+						getLog().debug("Skipped entry of length " + entry.getSize()
+					+ " with bad file name " 
+							+ java.net.URLEncoder.encode(entryName, "UTF-8"));
+					continue;
+				}
 				try {
 				// Get the filename to extract the entry into.
 				// Subclasses may define this to be something other
