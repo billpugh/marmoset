@@ -29,6 +29,7 @@ public final class ProcessTree {
 
     final Multimap<Integer, Integer> children = ArrayListMultimap.create();
     final Map<Integer, String> info = new HashMap<Integer, String>();
+    final Map<Integer, Integer> pgroup = new HashMap<Integer, Integer>();
 
     final Set<Integer> live = new HashSet<Integer>();
     final Logger log;
@@ -41,7 +42,11 @@ public final class ProcessTree {
       
         this.startTime = startTime
                 - TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS);
-        computeChildrenSwallowErrors();
+        try {
+        computeChildren();
+        } catch (Throwable t) {
+        	emergancyShutdown(MarmosetUtilities.getPid(process),  t);
+        }
     }
 
     // example date: Fri Apr 13 00:02:43 2012
@@ -71,17 +76,15 @@ public final class ProcessTree {
              live.add(pid);
              children.put(ppid, pid);
              info.put(pid, txt);
+             pgroup.put(pid,  pgrp);
 		}
     	
     	
     }
-    private void computeChildrenSwallowErrors() {
+    private void computeChildren() throws IOException {
     	 
-    try {
-        ListProcesses.listProcesses(new MyAnalyzePS(), log);
-        } catch (Throwable e) {
-        	log.debug("Exception while recomputing children after stop", e);
-        }
+           ListProcesses.listProcesses(new MyAnalyzePS(), log);
+
     }
     private void findTree(Set<Integer> found, int pid) {
         if (!found.add(pid))
@@ -93,6 +96,10 @@ public final class ProcessTree {
     private Set<Integer> findTree(int rootPid) {
         Set<Integer> result = new LinkedHashSet<Integer>();
         findTree(result, rootPid);
+        for(Map.Entry<Integer, Integer> e : pgroup.entrySet()) {
+        	if (e.getValue().equals(rootPid))
+        		result.add(e.getKey());
+        }
         result.retainAll(live);
         return result;
     }
@@ -112,23 +119,28 @@ public final class ProcessTree {
             Thread.currentThread().interrupt();
         }
     }
+    
+    public void emergancyShutdown(int pid, Throwable t) {
+    	 log.error("Error trying to kill process tree for " + pid, t);
+         log.error("Terminating process group, killing build server");
+         process.destroy();
+         ProcessKiller.kill(-MarmosetUtilities.getPid(), Signal.TERMINATION);
+         System.exit(-1);
+    }
 
     public void destroyProcessTree() {
         int pid = MarmosetUtilities.getPid(process);
-//        log.info("Killing process tree for pid " + pid);
+        log.info("Killing process tree for pid " + pid);
 
           
         try {
-        	computeChildrenSwallowErrors();
+        	computeChildren();
             this.killProcessTree(pid, Signal.KILL);
-        } catch (Exception e) {
-            log.warn("Error trying to kill process tree for " + pid, e);
-        } finally {
-            // call process.destroy() whether or not "kill -9 -<pid>" worked
-            // in order to maintain proper internal state
             process.destroy();
-        }
-//        log.info("Done Killing process tree for " + pid);
+        } catch (Throwable e) {
+        	emergancyShutdown(pid,  e);
+        } 
+        log.info("Done Killing process tree for " + pid);
 
     }
 
@@ -153,7 +165,7 @@ public final class ProcessTree {
 
         Set<Integer> subtree = findJvmSubtree();
         boolean differ = !result.equals(subtree) || !unrooted.isEmpty();
-        if (differ) {
+        if (true) {
             if (differ)
                 log.info("process tree and JVM subtree not the same:");
             logProcesses("root pid", Collections.singleton(rootPid));
@@ -172,7 +184,7 @@ public final class ProcessTree {
         while (true) {
             killProcesses(Signal.STOP, result);
             pause(100);
-            computeChildrenSwallowErrors();
+            computeChildren();
             Set<Integer> r = findTree(rootPid);
             Set<Integer> u = findTree(1);
             r.addAll(u);
@@ -187,15 +199,16 @@ public final class ProcessTree {
         killProcesses(signal, result);
         pause(1000);
         log.debug("process tree should now be dead");
-        computeChildrenSwallowErrors();
+        computeChildren();
         result.retainAll(children.keySet());
         if (!result.isEmpty()) {
             log.error("Undead processes: " + result);
             killProcesses(signal, result);
-            computeChildrenSwallowErrors();
+            computeChildren();
             result.retainAll(children.keySet());
-            if (!result.isEmpty())
-                log.error("super zombie processes: " + result);
+            if (!result.isEmpty()) {
+                emergancyShutdown(rootPid, new IOException("super zombie processes: " + result));
+            }
         }
         return resultSize;
     }
