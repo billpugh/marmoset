@@ -863,7 +863,6 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
        
         buildServer.initConfig();
         Logger log = buildServer.getLog();
-        log.warn("Alpha test 2015-12-16 20:52");
         
         /** Redirect standard out and err to dev null, since clover
          * writes to standard out and error */

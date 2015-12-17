@@ -277,6 +277,8 @@ public abstract class BuildServer implements ConfigurationKeys {
 		createWorkingDirectories();
 		this.log = createLog(getBuildServerConfiguration(), useServletAppender());
 		log.info("BuildServer starting with pid " + MarmosetUtilities.getPid());
+		log.warn("Alpha test 2015-12-16 20:52");
+	       
 		prepareToExecute();
 
 		String supportedCourseList = getBuildServerConfiguration().getSupportedCourses();
@@ -531,8 +533,10 @@ public abstract class BuildServer implements ConfigurationKeys {
                     downloadProjectJarFile(projectSubmission);
                     // log.warn
                 }
-                if (getDownloadOnly())
+                if (getDownloadOnly()) {
+                	 log.warn("Download only");
                     return NO_WORK;
+                }
 
                 long started = System.currentTimeMillis();
                 // Now we have the project and the testing jarfile.
