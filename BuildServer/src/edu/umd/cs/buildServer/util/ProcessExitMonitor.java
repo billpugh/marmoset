@@ -44,7 +44,13 @@ public final class ProcessExitMonitor implements Runnable {
 	private volatile int exitCode;
 	private final ProcessTree tree;
 	private final Thread thread;
+	private int processCount = 0;
 	
+
+	public int getProcessCount() {
+		return processCount;
+	}
+
 
 	public ProcessExitMonitor(Process process, Logger logger, long startTime) {
 	    thread = new Thread(this, "Process exit monitor");
@@ -73,7 +79,7 @@ public final class ProcessExitMonitor implements Runnable {
 		} finally {
 		    // no matter how we exit, kill process tree
 		    log.debug("Killing process tree");
-		    tree.destroyProcessTree();
+		    processCount = tree.destroyProcessTree();
 		    this.shutdown = true;
 		    synchronized(this) {
 		        notifyAll();

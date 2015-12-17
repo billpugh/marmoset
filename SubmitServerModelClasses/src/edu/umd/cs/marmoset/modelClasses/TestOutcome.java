@@ -364,7 +364,9 @@ public class TestOutcome implements Serializable {
 	            outcome.equals(ERROR) ||
 	            outcome.equals(HUH) ||
 	            outcome.equals(MISSING_COMPONENT) ||
-	            outcome.equals(TIMEOUT))
+	            outcome.equals(TIMEOUT) ||
+	            outcome.equals(FORK_BOMB)
+	            )
 	        return true;
 	    return false;
 	}

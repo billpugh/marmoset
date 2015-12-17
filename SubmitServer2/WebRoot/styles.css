@@ -263,6 +263,9 @@ td.huh {
 td.missing_component {
 	BACKGROUND: #3b63f8;
 }
+td.fork_bomb {
+	BACKGROUND: #4f00ff;
+}
 td.timeout {
 	BACKGROUND: #ff00ff;
 }

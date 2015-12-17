@@ -136,19 +136,21 @@ public final class ProcessTree {
          System.exit(-1);
     }
 
-    public void destroyProcessTree() {
+    public int destroyProcessTree() {
         int pid = MarmosetUtilities.getPid(process);
         log.info("Killing process tree for pid " + pid);
 
+        int result = Integer.MAX_VALUE;
           
         try {
         	examineProcesses();
-            this.killProcessTree(pid, Signal.KILL);
+        	result = this.killProcessTree(pid, Signal.KILL);
             process.destroy();
         } catch (Throwable e) {
         	emergancyShutdown(pid,  e);
         } 
         log.info("Done Killing process tree for " + pid);
+        return result;
 
     }
 

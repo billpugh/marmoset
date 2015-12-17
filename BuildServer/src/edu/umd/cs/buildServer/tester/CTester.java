@@ -310,11 +310,21 @@ public class CTester extends Tester<ScriptTestProperties> {
                 outcomeSet = true;
                 getLog().debug("Test timed out");
                 // didn't terminate
+                int processCount = exitMonitor.getProcessCount();
+                if (processCount > 100) {
+                	testOutcome.setOutcome(TestOutcome.FORK_BOMB);
+                    testOutcome.setShortTestResult("Fork bomb:  "
+                	+ processCount + " processes killed after "
+                            + TimeUnit.SECONDS.convert(
+                                    testOutcome.getExecutionTimeMillis(),
+                                    TimeUnit.MILLISECONDS) + " secs");
+                } else {
                 testOutcome.setOutcome(TestOutcome.TIMEOUT);
                 testOutcome.setShortTestResult("Timed out at "
                         + TimeUnit.SECONDS.convert(
                                 testOutcome.getExecutionTimeMillis(),
                                 TimeUnit.MILLISECONDS) + " secs");
+                }
             } else if (checkOutput != null)
                 try {
                     checkOutput.get(50, TimeUnit.MILLISECONDS);

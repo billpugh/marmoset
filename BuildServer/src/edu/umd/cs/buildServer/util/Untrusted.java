@@ -19,9 +19,9 @@ public class Untrusted {
         return builder.start();
     }
    
-    private static void destroyProcessTree(Process process, Logger log, long startTime)  {
+    private static int destroyProcessTree(Process process, Logger log, long startTime)  {
             
-        new ProcessTree(process, log, startTime).destroyProcessTree();
+       return new ProcessTree(process, log, startTime).destroyProcessTree();
     }
         
 
