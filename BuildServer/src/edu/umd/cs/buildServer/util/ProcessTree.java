@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -33,17 +32,16 @@ public final class ProcessTree {
 
     final Set<Integer> live = new HashSet<Integer>();
     final Logger log;
-    final String user;
     final Process process;
     final long startTime;
 
     public ProcessTree(Process process, Logger log, long startTime) {
         this.process = process;
         this.log = log;
-        user = System.getProperty("user.name");
+      
         this.startTime = startTime
                 - TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS);
-        computeChildren(new MyAnalyzePS(), log);
+        computeChildrenSwallowErrors();
     }
 
     // example date: Fri Apr 13 00:02:43 2012
@@ -54,12 +52,7 @@ public final class ProcessTree {
         }
     };
 
-    interface AnalyzePS {
-    	public void started();
-    	public void process(int pid, int ppid, int pgrp, String usr, char state, Date started, String txt); 
-  
-    }
-    class MyAnalyzePS implements AnalyzePS{
+    class MyAnalyzePS implements ListProcesses.AnalyzePS{
 
     	 final int rootPid = MarmosetUtilities.getPid();
          
@@ -69,9 +62,8 @@ public final class ProcessTree {
 		}
 
 		@Override
-		public void process(int pid, int ppid, int pgrp, String usr, char state, Date started, String txt) {
-			 if (!user.equals(usr)) 
-				 return;
+		public void process(int pid, int ppid, int pgrp, char state, Date started, String txt) {
+
 			 if (started.getTime() < startTime) 
 				 return;
 			 if (rootPid == pid) 
@@ -83,73 +75,10 @@ public final class ProcessTree {
     	
     	
     }
-    public static void computeChildren(AnalyzePS callback, Logger log) {
-        ProcessBuilder b = new ProcessBuilder(
-                new String[] { "/bin/ps", "xww", "-o",
-                        "pid,ppid,pgrp,lstart,user,state,pcpu,cputime,args" });
-
-        Process p = null;
-        try {
-    
-            try {
-                p = b.start();
-            } catch (RuntimeException t) {
-                log.fatal("Unable to start ps", t);
-                throw t;
-            } catch (Error t) {
-                log.fatal("Unable to start ps", t);
-                throw t;
-            }
-            
-            int psPid = MarmosetUtilities.getPid(p);
-            p.getOutputStream().close();
-            Scanner s = new Scanner(p.getInputStream());
-            log.warn("Starting ps");
-            String header = s.nextLine();
-            log.warn("ps header: " + header);
-            callback.started();
-
-            while (s.hasNext()) {
-                String txt = s.nextLine();
-                log.warn(txt);
-                try {
-                	int pid = Integer.parseInt(txt.substring(0, 5).trim());
-                    int ppid = Integer.parseInt(txt.substring(6, 11).trim());
-                    int pgrp = Integer.parseInt(txt.substring(12, 17).trim());
-                     Date started = DATE_FORMAT.get().parse(
-                            txt.substring(18, 42));
-                     String user = txt.substring(43,51).trim();
-                     char state = txt.charAt(52);
-                     
-                    if (psPid == pid)
-                        continue;
-                    callback.process(pid,  ppid, pgrp, user, state, started, txt);
-                } catch (Exception e) {
-                    log.error("Error while building process treee, parsing "
-                            + txt, e);
-                }
-
-            }
-            s.close();
-            s = new Scanner(p.getErrorStream());
-            while (s.hasNext()) {
-                log.error(s.nextLine());
-            }
-            s.close();
-            log.warn("Finished ps");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-        	if (p != null)
-        		p.destroy();
-        }
-    }
-    
-    
     private void computeChildrenSwallowErrors() {
     	 
     try {
-        computeChildren(new MyAnalyzePS(), log);
+        ListProcesses.listProcesses(new MyAnalyzePS(), log);
         } catch (Throwable e) {
         	log.debug("Exception while recomputing children after stop", e);
         }
