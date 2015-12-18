@@ -43,7 +43,8 @@
 		<td class="description"> The test case took too long and was killed by the BuildServer.
 		</td>
 	</tr>
-	<c:if test="${testProperties.language=='java'}">
+	<c:choose>
+	<c:when test="${testProperties.language=='java'}">
 	<tr class="r1">
 		<td> error </td>
 		<td class="error"> &nbsp; </td>
@@ -84,6 +85,15 @@
 		your instructor if this is indeed the case.
 		</td>
 	</tr>
-	</c:if>
+	</c:when>
+	<c:otherwise>
+		<tr class="r1">
+		<td> fork bomb </td>
+		<td class="fork_bomb"> &nbsp; </td>
+		<td class="description"> The test case took too long and more than 100 processes were running when killed.
+		</td>
+	</tr>
+	</c:otherwise>
+	</c:choose>
 
 </table>
