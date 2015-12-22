@@ -47,6 +47,9 @@
 
 <c:set var="testCols" value="2" />
 
+<c:set var="inconsistentResults"
+      value="${fn:length(failedBackgroundRetestSubmissionList)}" />
+
 <c:if test="${project.tested}">
 	<c:if test="${inconsistentResults > 0}">
 		<c:set var="testCols" value="${1+testCols}" />
@@ -56,8 +59,6 @@
 	</c:if>
 </c:if>
 
-<c:set var="inconsistentResults"
-      value="${fn:length(failedBackgroundRetestSubmissionList)}" />
 
 
 <p>
