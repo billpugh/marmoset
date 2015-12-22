@@ -82,3 +82,7 @@ CREATE TABLE `file_contents` (
 ALTER TABLE  `student_submit_status` ADD  `last_build_request_timestamp` DATETIME NULL DEFAULT NULL;
 
 ALTER TABLE  `buildservers` ADD  `java_version` VARCHAR( 40 ) NOT NULL DEFAULT  'UNKNOWN';
+
+ALTER TABLE  `test_outcomes` CHANGE `outcome`
+  `outcome` enum('passed','failed','could_not_run','warning','error','not_implemented','huh','timeout','uncovered_method','missing_component', 'fork_bomb') NOT NULL DEFAULT 'passed';
+

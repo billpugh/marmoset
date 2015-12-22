@@ -526,7 +526,7 @@ CREATE TABLE `test_outcomes` (
   `test_run_pk` int(20) unsigned NOT NULL DEFAULT '0',
   `test_type` enum('build','public','release','secret','findbugs','pmd','student','uncovered_method') NOT NULL DEFAULT 'build',
   `test_number` int(20) unsigned NOT NULL DEFAULT '0',
-  `outcome` enum('passed','failed','could_not_run','warning','error','not_implemented','huh','timeout','uncovered_method','missing_component') NOT NULL DEFAULT 'passed',
+  `outcome` enum('passed','failed','could_not_run','warning','error','not_implemented','huh','timeout','uncovered_method','missing_component', 'fork_bomb') NOT NULL DEFAULT 'passed',
   `point_value` smallint(4) NOT NULL DEFAULT '0',
   `test_name` varchar(100) NOT NULL DEFAULT '',
   `short_test_result` varchar(300) NOT NULL DEFAULT '',
