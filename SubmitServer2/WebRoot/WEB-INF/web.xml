@@ -313,9 +313,6 @@
 		<url-pattern>/docs/instructor/*</url-pattern>
 	</filter-mapping>
 
-
-
-
     <!-- ExtractParametersFilter -->
 	<filter>
 		<filter-name>ExtractParametersFilter</filter-name>
@@ -732,6 +729,11 @@
 		<filter-name>TestSetupFilter</filter-name>
 		<url-pattern>/view/submission.jsp</url-pattern>
 	</filter-mapping>
+	<filter-mapping>
+		<filter-name>TestSetupFilter</filter-name>
+		<url-pattern>/view/instructor/TestProperties</url-pattern>
+	</filter-mapping>
+	
 	<filter-mapping>
 		<filter-name>TestSetupFilter</filter-name>
 		<url-pattern>/view/project.jsp</url-pattern>
@@ -1819,6 +1821,14 @@
       <url-pattern>/info/system</url-pattern>
     </servlet-mapping>
 
+  <servlet>
+      <servlet-name>ShowTestProperties</servlet-name>
+      <servlet-class>edu.umd.cs.submitServer.servlets.ShowTestProperties</servlet-class> 
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>ShowTestProperties</servlet-name>
+      <url-pattern>/view/instructor/TestProperties</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>StudentAccountForInstructor</servlet-name>
