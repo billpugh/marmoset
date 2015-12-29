@@ -91,8 +91,8 @@
       includes="**/*.java"
       destdir="${bin}"
       deprecation="yes"
-      source="1.7"
-      target="1.7"
+      source="1.8"
+      target="1.8"
       debug="on"
       includeantruntime="false"
       >
@@ -107,8 +107,8 @@
       destdir="${bin}"
       deprecation="no"
       debug="on"
-      source="1.7"
-      target="1.7"
+      source="1.8"
+      target="1.8"
       includeantruntime="false"
 	compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
       >
@@ -126,8 +126,8 @@
       destdir="${bin}"
       deprecation="no"
       debug="on"
-      source="1.7"
-      target="1.7"
+      source="1.8"
+      target="1.8"
       includeantruntime="false"
       >
             <src path="${src}" />

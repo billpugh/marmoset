@@ -33,7 +33,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/SubmitServerModelClasses/lib/mail.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JDK 1.8.0">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
