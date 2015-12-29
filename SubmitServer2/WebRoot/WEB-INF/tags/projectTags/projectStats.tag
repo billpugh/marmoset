@@ -7,6 +7,16 @@
 <h3>Test Stats</h3>
 <div class="projectvitalstats">
         
+    <c:choose>
+    <c:when test="${not empty testProperties}">
+    <p>Test framework: <c:out value="${test.properties.framework}"/>
+    </c:when>
+    <c:otherwise>
+    <p>No test properties
+    </c:otherwise>
+    </c:choose>
+    
+    
     <c:if test="${projectBuildStatusCount['new'] > 0}">
         <p>${projectBuildStatusCount['new']} submissions waiting to be tested
         </p>
