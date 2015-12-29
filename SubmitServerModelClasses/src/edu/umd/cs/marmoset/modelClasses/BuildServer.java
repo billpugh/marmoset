@@ -117,8 +117,7 @@ public class BuildServer implements Comparable<BuildServer> {
 				TABLE_NAME);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setStatement(stmt, name, remoteHost, courses, javaVersion, lastRequest, 0,
-					load, TestRun.Kind.UNKNOWN, remoteHost, courses, javaVersion, lastRequest, 0,
+			Queries.setInsertOrUpdateStatement(stmt, name, remoteHost, courses, javaVersion, lastRequest, 0,
 					load, TestRun.Kind.UNKNOWN);
 			stmt.executeUpdate();
 		} finally {
@@ -133,8 +132,8 @@ public class BuildServer implements Comparable<BuildServer> {
 				TABLE_NAME);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setStatement(stmt, name, remoteHost, courses, javaVersion, now,submission.getSubmissionPK(), now,load, kind,
-					remoteHost, courses, javaVersion, now, submission.getSubmissionPK(), now,load, kind);
+			Queries.setInsertOrUpdateStatement(stmt, name, remoteHost, courses, javaVersion, now, 
+					submission.getSubmissionPK(), now,load, kind);
 			stmt.executeUpdate();
 		} finally {
 			Queries.closeStatement(stmt);
@@ -152,9 +151,8 @@ public class BuildServer implements Comparable<BuildServer> {
 		@Submission.PK int submissionPK = submission.getSubmissionPK();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setStatement(stmt,
-					name, remoteHost, now, submissionPK, 0, load, TestRun.Kind.UNKNOWN, "", now,
-					 remoteHost, now, submissionPK,0, load, TestRun.Kind.UNKNOWN);
+			Queries.setInsertOrUpdateStatement(stmt,
+					name, remoteHost, now, submissionPK, 0, load, TestRun.Kind.UNKNOWN);
 			stmt.executeUpdate();
 		} finally {
 			Queries.closeStatement(stmt);

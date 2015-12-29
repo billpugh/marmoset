@@ -52,8 +52,7 @@ public class StudentPicture {
 				TABLE_NAME);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setStatement(stmt, student.getStudentPK(), type, blob,
-					type, blob);
+			Queries.setInsertOrUpdateStatement(stmt, student.getStudentPK(), type, blob);
 			stmt.executeUpdate();
 		} finally {
 			Queries.closeStatement(stmt);

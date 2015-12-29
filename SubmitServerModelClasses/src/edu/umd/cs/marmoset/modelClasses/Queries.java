@@ -642,39 +642,62 @@ public final class Queries {
 	    return stmt;
 	}
 
+	
+	//makeInsertOrUpdateStatement
+	
 	public static void setStatement(PreparedStatement p, Object... args)
 			throws SQLException {
-//		ParameterMetaData meta = p.getParameterMetaData();
 		for (int i = 0; i < args.length; i++) {
 			Object o = args[i];
 			int col = i + 1;
-//			String className = meta.getParameterClassName(col);
-//			if (o != null && !o.getClass().getName().equals(className)) {
-//				new SQLException(String.format("parameter %d of type %s doesn't match argument of class %s",
-//						col, className, o.getClass().getName())).printStackTrace();
-//			}
 				
-			if (o instanceof String)
-				p.setString(col, (String) o);
-			else if (o instanceof Enum<?>) 
-			    p.setString(col, ((Enum<?>) o).name());
-			else if (o instanceof Integer)
-				p.setInt(col, (Integer) o);
-			else if (o instanceof Long)
-				p.setLong(col, (Long) o);
-			else if (o instanceof Timestamp)
-				p.setTimestamp(col, (Timestamp) o);
-			else if (o instanceof Blob)
-				p.setBlob(col, (Blob) o);
-			else if (o instanceof Boolean)
-				p.setBoolean(col, (Boolean) o);
-			else if (o == null)
-				p.setNull(col, Types.INTEGER);
-			else
-				throw new IllegalArgumentException(
-						"Can handle argument of class "
-								+ o.getClass().getSimpleName());
+			setPreparedStatementParameter(p, col, o);
 		}
+	}
+	
+	public static void setInsertOrUpdateStatement(PreparedStatement p, Object... args)
+			throws SQLException {
+		int col = 1;
+		for (int i = 0; i < args.length; i++) {
+				
+			setPreparedStatementParameter(p, col++, args[i]);
+		}
+		// skip first argument, which is primary key
+		for (int i = 1; i < args.length; i++) {
+			setPreparedStatementParameter(p, col++, args[i]);
+		}
+
+	}
+	
+	
+	private static void setPreparedStatementParameter(PreparedStatement p, int col, Object o) throws SQLException {
+//		ParameterMetaData meta = p.getParameterMetaData();
+//		String className = meta.getParameterClassName(col);
+//		if (o != null && !o.getClass().getName().equals(className)) {
+//			new SQLException(String.format("parameter %d of type %s doesn't match argument of class %s",
+//					col, className, o.getClass().getName())).printStackTrace();
+//		}
+
+		if (o instanceof String)
+			p.setString(col, (String) o);
+		else if (o instanceof Enum<?>) 
+		    p.setString(col, ((Enum<?>) o).name());
+		else if (o instanceof Integer)
+			p.setInt(col, (Integer) o);
+		else if (o instanceof Long)
+			p.setLong(col, (Long) o);
+		else if (o instanceof Timestamp)
+			p.setTimestamp(col, (Timestamp) o);
+		else if (o instanceof Blob)
+			p.setBlob(col, (Blob) o);
+		else if (o instanceof Boolean)
+			p.setBoolean(col, (Boolean) o);
+		else if (o == null)
+			p.setNull(col, Types.INTEGER);
+		else
+			throw new IllegalArgumentException(
+					"Can handle argument of class "
+							+ o.getClass().getSimpleName());
 	}
 
 	/**
