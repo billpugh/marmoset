@@ -180,10 +180,14 @@ public class MultipartRequest {
 	 *
 	 * @return the value of the given parameter, or null if unspecified
 	 */
-	public @CheckForNull String getOptionalStringParameter(String name) {
+	 public @CheckForNull String getOptionalStringParameter(String name) {
+	   return getOptionalStringParameter(name, null);
+	 }
+
+	 public @CheckForNull String getOptionalStringParameter(String name, String defaultValue) {
 		String param = (String) parameters.get(name);
 		if (param == null || param.equals("")) {
-			return null;
+			return defaultValue;
 		}
 		return param;
 	}

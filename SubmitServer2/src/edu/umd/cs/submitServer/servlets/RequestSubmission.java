@@ -105,10 +105,10 @@ public class RequestSubmission extends SubmitServerServlet {
     String testSetupPK = multipartRequest.getOptionalCheckedParameter("testSetupPK");
 
     String hostname = multipartRequest.getOptionalStringParameter("hostname");
-    String load = multipartRequest.getOptionalStringParameter("load");
-    if (load == null)
-      load = "unknown";
-    String javaVersion = multipartRequest.getOptionalStringParameter("javaVersion");
+    String load = multipartRequest.getOptionalStringParameter("load", "unknown");
+
+    String javaVersion = multipartRequest.getOptionalStringParameter("javaVersion", "Unknown");
+
     
     String projectNumber = multipartRequest.getOptionalStringParameter("projectNumber");
 
@@ -240,6 +240,7 @@ public class RequestSubmission extends SubmitServerServlet {
               break findSubmission;
             }
 
+            
             BuildServer.submissionRequestedNoneAvailable(conn, hostname, remoteHost, courseKey, javaVersion, now, load);
             int waitFor = connectionTimeout - 1000;
             if (waitFor > 1000) {

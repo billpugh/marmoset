@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 public class BuildServer implements Comparable<BuildServer> {
 
@@ -109,8 +110,8 @@ public class BuildServer implements Comparable<BuildServer> {
 	}
 
 	public static void submissionRequestedNoneAvailable(Connection conn, String name,
-			String remoteHost, @CheckForNull String courses, String javaVersion,
-			Timestamp lastRequest, String load) throws SQLException {
+			String remoteHost, @CheckForNull String courses, @Nonnull String javaVersion,
+			Timestamp lastRequest, @Nonnull String load) throws SQLException {
 		String query = Queries.makeInsertOrUpdateStatement(new String[] {
 				"name", "remote_host", "courses", "java_version", "last_request", 
 				"last_request_submission_pk", "system_load", "kind"},
