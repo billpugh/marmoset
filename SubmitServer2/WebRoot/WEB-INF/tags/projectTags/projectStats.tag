@@ -6,18 +6,37 @@
 
 <h3>Test Stats</h3>
 <div class="projectvitalstats">
-        
-    <c:choose>
-    <c:when test="${not empty testProperties}">
-    <p>Test framework: <c:out value="${test.properties.framework}"/>
-    </c:when>
-    <c:otherwise>
-    <p>No test properties
-    </c:otherwise>
-    </c:choose>
-    
-    
-    <c:if test="${projectBuildStatusCount['new'] > 0}">
+
+		<c:choose>
+			<c:when test="${not empty testProperties}">
+				<ul>
+					<li>Test framework: <c:out value="${testProperties.framework}" />
+					<li>Test kinds: <c:out
+							value="${testProperties.dynamicTestKinds}" /> 
+					<c:if test="${not empty testProperties.requiredFiles}">
+							<li>Required files: <c:out
+									value="${testProperties.requiredFiles}" /></c:if> 
+						<c:choose>
+
+							<c:when test="${testProperties.framework.java}">
+								<li>Java source version: <c:out
+										value="${testProperties.javaSourceVersion}" /> <c:if
+										test="${testProperties.performCodeCoverage}">
+										<li>Code coverage information requested
+									</c:if>
+							</c:when>
+
+						</c:choose>
+				</ul>
+			</c:when>
+
+			<c:otherwise>
+				<p>No test properties
+			</c:otherwise>
+		</c:choose>
+
+
+		<c:if test="${projectBuildStatusCount['new'] > 0}">
         <p>${projectBuildStatusCount['new']} submissions waiting to be tested
         </p>
     </c:if>

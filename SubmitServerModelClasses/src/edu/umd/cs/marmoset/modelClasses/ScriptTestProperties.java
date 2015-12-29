@@ -1,7 +1,10 @@
 package edu.umd.cs.marmoset.modelClasses;
 
+import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.LD_LIBRARY_PATH;
+
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -11,6 +14,7 @@ public class ScriptTestProperties extends TestProperties {
    
     
     final Map<String, ExecutableTestCase> testCases;
+	private String ldLibraryPath;
     public ScriptTestProperties(Properties testProperties) {
         this(Framework.SCRIPT, testProperties);
     }
@@ -22,6 +26,17 @@ public class ScriptTestProperties extends TestProperties {
         return testCases.values();
     }
 
+    public EnumSet<TestType> getDynamicTestKinds() {
+    	EnumSet<TestType> result =  EnumSet.noneOf(TestType.class);
+    
+    	for (TestType testType : TestType.DYNAMIC_TEST_TYPES) {
+    		if (getTestNames(testType) != null)
+    			result.add(testType);
+    	}
+    	return result;
+    	       
+    }
+    
     public Iterable<String> getTestNames(TestType testType) {
        String names =  getOptionalStringProperty(TestPropertyKeys.TESTCASES_PREFIX + testType.toString());
        if (names == null)
@@ -34,5 +49,12 @@ public class ScriptTestProperties extends TestProperties {
        return Arrays.asList(names.split("[,\\s]+"));
            
     }
+	public String getLdLibraryPath() {
+	    return ldLibraryPath;
+	}
+	protected void setLdLibraryPath(String ldLibraryPath) {
+	    this.ldLibraryPath = ldLibraryPath;
+	    setProperty(LD_LIBRARY_PATH, this.ldLibraryPath);
+	}
    
 }

@@ -27,7 +27,6 @@ import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.ADDITIONAL_SOURC
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.DEFAULT_MAX_DRAIN_OUTPUT_IN_BYTES;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.DEFAULT_PROCESS_TIMEOUT;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.JAVA;
-import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.LD_LIBRARY_PATH;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.MAX_DRAIN_OUTPUT_IN_BYTES;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.TEST_TIMEOUT;
 
@@ -40,6 +39,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -48,6 +48,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.annotation.CheckForNull;
 
+import edu.umd.cs.marmoset.modelClasses.TestOutcome.TestType;
 import edu.umd.cs.marmoset.utilities.FileNames;
 
 /**
@@ -56,7 +57,7 @@ import edu.umd.cs.marmoset.utilities.FileNames;
  * @author David Hovemeyer
  * @author Jaime Spacco
  */
-public class TestProperties {
+public abstract class TestProperties {
 
     public enum Framework {
         JUNIT, MAKE, SCRIPT;
@@ -79,9 +80,10 @@ public class TestProperties {
     protected Set<String> requiredFiles;
 
     private int maxDrainOutputInBytes;
-    private String ldLibraryPath;
     private String additionalSourceFileExtensions;
 
+    public abstract EnumSet<TestType> getDynamicTestKinds();
+    
     public String getAdditionalSourceFileExtensions() {
         return additionalSourceFileExtensions;
     }
@@ -171,7 +173,6 @@ public class TestProperties {
         setMaxDrainOutputInBytes(getOptionalIntegerProperty(
                 MAX_DRAIN_OUTPUT_IN_BYTES, DEFAULT_MAX_DRAIN_OUTPUT_IN_BYTES));
         setAdditionalSourceFileExtensions(getOptionalStringProperty(ADDITIONAL_SOURCE_FILE_EXTENSIONS));
-        setLdLibraryPath(getOptionalStringProperty(LD_LIBRARY_PATH));
         int timeout = getOptionalIntegerProperty(TEST_TIMEOUT,
                 DEFAULT_PROCESS_TIMEOUT);
         int buildTimeout = getOptionalIntegerProperty(TestPropertyKeys.BUILD_TIMEOUT,
@@ -269,15 +270,6 @@ public class TestProperties {
         this.maxDrainOutputInBytes = maxDrainOutputInBytes;
         setProperty(MAX_DRAIN_OUTPUT_IN_BYTES[0],
                 Integer.toString(this.maxDrainOutputInBytes));
-    }
-
-    public String getLdLibraryPath() {
-        return ldLibraryPath;
-    }
-
-    protected void setLdLibraryPath(String ldLibraryPath) {
-        this.ldLibraryPath = ldLibraryPath;
-        setProperty(LD_LIBRARY_PATH, this.ldLibraryPath);
     }
 
     public boolean isSourceFile(String name) {

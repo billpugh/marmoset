@@ -1,15 +1,16 @@
 package edu.umd.cs.marmoset.modelClasses;
 
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.DEFAULT_JAVA_SOURCE_VERSION;
-import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.DEFAULT_MAX_DRAIN_OUTPUT_IN_BYTES;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.LD_LIBRARY_PATH;
-import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.MAX_DRAIN_OUTPUT_IN_BYTES;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.PERFORM_CODE_COVERAGE;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.RUN_IN_TESTFILES_DIR;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.SOURCE_VERSION;
 import static edu.umd.cs.marmoset.modelClasses.TestPropertyKeys.VM_ARGS;
 
+import java.util.EnumSet;
 import java.util.Properties;
+
+import javax.annotation.CheckForNull;
 
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.TestType;
 
@@ -20,6 +21,7 @@ public class JUnitTestProperties extends TestProperties {
     private String javaSourceVersion;
     private boolean testRunnerInTestfileDir;
     private String vmArgs;
+	private String ldLibraryPath;
 
     public JUnitTestProperties(Properties testProperties) {
         super(Framework.JUNIT, testProperties);
@@ -28,12 +30,22 @@ public class JUnitTestProperties extends TestProperties {
         setTestRunnerInTestfileDir(getOptionalBooleanProperty(RUN_IN_TESTFILES_DIR, true));
         setVmArgs(getOptionalStringProperty(VM_ARGS));
         
-        setMaxDrainOutputInBytes(getOptionalIntegerProperty(MAX_DRAIN_OUTPUT_IN_BYTES, DEFAULT_MAX_DRAIN_OUTPUT_IN_BYTES));
         setLdLibraryPath(getOptionalStringProperty(LD_LIBRARY_PATH));
         
 
     }
 
+    public EnumSet<TestType> getDynamicTestKinds() {
+    	EnumSet<TestType> result =  EnumSet.noneOf(TestType.class);
+    
+    	for (TestType testType : TestType.DYNAMIC_TEST_TYPES) {
+    		if (getTestClass(testType) != null)
+    			result.add(testType);
+    	}
+    	return result;
+    	       
+    }
+    
     /**
      * Get the "test class" for the given test type.
      * The meaning of the test class depends on what kind
@@ -43,7 +55,7 @@ public class JUnitTestProperties extends TestProperties {
      * @return the test class for the test type, or null if no test class
      *         is defined for the test type
      */
-    public String getTestClass(TestType testType) {
+    public @CheckForNull String getTestClass(TestType testType) {
         return  getOptionalStringProperty(TestPropertyKeys.TESTCLASS_PREFIX + testType);
 
     }
@@ -104,5 +116,14 @@ public class JUnitTestProperties extends TestProperties {
         this.vmArgs = vmArgs;
         setProperty(VM_ARGS, this.vmArgs);
     }
+
+	public String getLdLibraryPath() {
+	    return ldLibraryPath;
+	}
+
+	protected void setLdLibraryPath(String ldLibraryPath) {
+	    this.ldLibraryPath = ldLibraryPath;
+	    setProperty(LD_LIBRARY_PATH, this.ldLibraryPath);
+	}
 
 }
