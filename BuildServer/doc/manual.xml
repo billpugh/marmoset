@@ -957,7 +957,7 @@ Usage: ./install
 					<entry>Java</entry>
 					<entry>Specifies the value of the "-source" command line option
 					used when invoking <command>javac</command>.
-					If not specified, defaults to "1.6".</entry>
+					If not specified, defaults to "1.8".</entry>
 				</row>
 				<row>
 					<entry>build.make.command</entry>
