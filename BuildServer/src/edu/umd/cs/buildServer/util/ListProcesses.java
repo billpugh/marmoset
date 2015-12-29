@@ -2,9 +2,13 @@ package edu.umd.cs.buildServer.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Scanner;
 
 import org.apache.log4j.Level;
@@ -16,29 +20,32 @@ public class ListProcesses {
 
 	interface AnalyzePS {
 		public void started();
-		public void process(int pid, int ppid, int pgrp, char state, Date started, String txt); 
-	
+
+		public void process(int pid, int ppid, int pgrp, char state, Date started, String txt);
+
 	}
 
-	
 	public static void main(String args[]) throws Exception {
 		Logger log = Logger.getRootLogger();
 		log.setLevel(Level.ALL);
-		System.out.printf("%6s %6s %6s %1s %s%n", "pid", "ppid", "pgrp", "S", "txt");;
+		System.out.printf("%6s %6s %6s %1s %s%n", "pid", "ppid", "pgrp", "S", "txt");
+		
 		listProcesses(new AnalyzePS() {
 
 			@Override
 			public void started() {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void process(int pid, int ppid, int pgrp, char state, Date started, String txt) {
 				System.out.printf("%6d %6d %6d %c %s\n", pid, ppid, pgrp, state, txt);
-				
-			}}, log);
+
+			}
+		}, log);
 	}
+
 	public static void listProcesses(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
 		File p = new File("/proc");
 		if (p.exists() && p.isDirectory())
@@ -46,133 +53,130 @@ public class ListProcesses {
 		else
 			listProcessesUsingPS(callback, log);
 	}
-	private static void listProcessesUsingPS(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
-	    ProcessBuilder b = new ProcessBuilder(
-	            new String[] { "/bin/ps", "xww", "-o",
-	                    "pid,ppid,pgid,lstart,user,state,pcpu,cputime,args" });
-	    String thisUser = System.getProperty("user.name");
-	    Process p = null;
-	    try {
-	        try {
-	            p = b.start();
-	        } catch (RuntimeException t) {
-	            log.fatal("Unable to start ps", t);
-	            throw t;
-	        } catch (Error t) {
-	            log.fatal("Unable to start ps", t);
-	            throw t;
-	        }
-	        
-	        int psPid = MarmosetUtilities.getPid(p);
-	        p.getOutputStream().close();
-	        Scanner s = new Scanner(p.getInputStream());
-	        log.warn("Starting ps");
-	        String header = s.nextLine();
-	        log.warn("ps header: " + header);
-	        callback.started();
-	
-	        while (s.hasNext()) {
-	            String txt = s.nextLine();
-	            log.warn(txt);
-	            try {
-	            	int pid = Integer.parseInt(txt.substring(0, 5).trim());
-	                int ppid = Integer.parseInt(txt.substring(6, 11).trim());
-	                int pgrp = Integer.parseInt(txt.substring(12, 17).trim());
-	                 Date started = ProcessTree.DATE_FORMAT.get().parse(
-	                        txt.substring(18, 42));
-	                 String user = txt.substring(43,51).trim();
-	                 char state = txt.charAt(52);
-	                 if (!user.equals(thisUser)) 
-	                	 continue;
-	                 
-	                if (psPid == pid)
-	                    continue;
-	                callback.process(pid, ppid, pgrp, state, started, txt);
-	            } catch (Exception e) {
-	                log.error("Error while building process treee, parsing "
-	                        + txt, e);
-	            }
-	
-	        }
-	        s.close();
-	        s = new Scanner(p.getErrorStream());
-	        while (s.hasNext()) {
-	            log.error(s.nextLine());
-	        }
-	        s.close();
-	        log.warn("Finished ps");
 
-	    } finally {
-	    	if (p != null)
-	    		p.destroy();
-	    }
+	private static void listProcessesUsingPS(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
+		ProcessBuilder b = new ProcessBuilder(
+				new String[] { "/bin/ps", "xww", "-o", "pid,ppid,pgid,lstart,user,state,pcpu,cputime,args" });
+		String thisUser = System.getProperty("user.name");
+		Process p = null;
+		try {
+			try {
+				p = b.start();
+			} catch (RuntimeException t) {
+				log.fatal("Unable to start ps", t);
+				throw t;
+			} catch (Error t) {
+				log.fatal("Unable to start ps", t);
+				throw t;
+			}
+
+			int psPid = MarmosetUtilities.getPid(p);
+			p.getOutputStream().close();
+			Scanner s = new Scanner(p.getInputStream());
+			log.warn("Starting ps");
+			String header = s.nextLine();
+			log.warn("ps header: " + header);
+			callback.started();
+
+			while (s.hasNext()) {
+				String txt = s.nextLine();
+				try {
+					int pid = Integer.parseInt(txt.substring(0, 5).trim());
+					int ppid = Integer.parseInt(txt.substring(6, 11).trim());
+					int pgrp = Integer.parseInt(txt.substring(12, 17).trim());
+					Date started = ProcessTree.DATE_FORMAT.get().parse(txt.substring(18, 42));
+					String user = txt.substring(43, 51).trim();
+					char state = txt.charAt(52);
+					if (!user.equals(thisUser))
+						continue;
+
+					if (psPid == pid)
+						continue;
+					callback.process(pid, ppid, pgrp, state, started, txt);
+				} catch (Exception e) {
+					log.error("Error while building process treee, parsing " + txt, e);
+				}
+
+			}
+			s.close();
+			try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
+				r.lines().forEach(txt -> log.error(txt));
+			}
+			
+			log.warn("Finished ps");
+
+		} finally {
+			if (p != null)
+				p.destroy();
+		}
 	}
 
-	public static String getLine(File f) {
-		try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-			return br.readLine();
-		} catch (IOException e) {
-			return "";
+	public static String getLine(Path p) throws IOException {
+		return Files.lines(p).findFirst().get();
+	}
+
+	public static boolean isProcess(Path p) {
+		try {
+			getPidFromProcDirectory(p);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
 		}
+
+	}
+
+	private static int getPidFromProcDirectory(Path p) {
+		return Integer.parseInt(p.getName(1).toString());
 	}
 
 	private static void listProcessesUsingProc(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
-		File proc = new File("/proc");
-		if (!proc.isDirectory()) 
+		Path proc = Paths.get("/proc");
+		if (!Files.isDirectory(proc))
 			throw new IOException("/proc not available");
-		
+
 		int myPid = MarmosetUtilities.getPid();
-		log.info("My pid: " + myPid );
-		String myUserId = getLoginUID(new File(proc, Integer.toString(myPid)));
-		log.info("My userID: " + myUserId );
+		log.info("My pid: " + myPid);
+		String myUserId = getLoginUID(proc.resolve(Integer.toString(myPid)));
+		log.info("My userID: " + myUserId);
 		Date now = new Date();
 		callback.started();
-		for(File p : proc.listFiles()) {
-			String name = p.getName();
-			int pid;
+		Files.list(proc).filter(ListProcesses::isProcess).forEach(p -> {
+
 			try {
-				 pid = Integer.parseInt(name);
-			} catch (NumberFormatException e) {
-				continue;
-			}
+				int pid = getPidFromProcDirectory(p);
 
-			String userid = getLoginUID(p);
-			if (!myUserId.equals(userid))
-				continue;
-			String contents = getStat(p);
-			String fields[] = contents.split(" ");
-			int pid0 = Integer.parseInt(fields[0]);
-			String filename = fields[1];
-			char state = fields[2].charAt(0);
-			int ppid =  Integer.parseInt(fields[3]);
-			int pgrp =  Integer.parseInt(fields[4]);
-			if (pid != pid0) {
-				log.error("Pid " + pid + " doesn't match " + contents);
-			}
-			log.info("proc: " + userid + " :: " + contents);
-			callback.process(pid, ppid, pgrp, state, now, filename);
-			
-		}
-	}
-
-	private static String getStat(File p) {
-		return getLine(new File(p,"stat"));
-	}
-
-	private static String getLoginUID(File p) {
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(p, "status")))) {
-			while (true) {
-				String s = br.readLine();
-				if (s == null)
-					throw new IOException("Did not find user id");
-				if (s.startsWith("Uid:")) {
-					String fields[] = s.split("\t");
-					return fields[1];
+				String userid = getLoginUID(p);
+				if (!myUserId.equals(userid))
+					return;
+				String contents = getStat(p);
+				String fields[] = contents.split(" ");
+				int pid0 = Integer.parseInt(fields[0]);
+				String filename = fields[1];
+				char state = fields[2].charAt(0);
+				int ppid = Integer.parseInt(fields[3]);
+				int pgrp = Integer.parseInt(fields[4]);
+				if (pid != pid0) {
+					log.error("Pid " + pid + " doesn't match " + contents);
 				}
+				log.info("proc: " + userid + " :: " + contents);
+				callback.process(pid, ppid, pgrp, state, now, filename);
+			} catch (Exception e) {
+				log.error("Error examining " + p, e);
+
 			}
-		} catch (IOException e) {
-			return "";
-		}
+
+		});
+	}
+
+	private static String getStat(Path p) throws IOException {
+		return getLine(p.resolve("stat"));
+	}
+
+	private static String getLoginUID(Path p) throws IOException {
+		Optional<String> uid = Files.lines(p).filter(s -> s.startsWith("Uid:")).findFirst();
+		if (!uid.isPresent())
+			throw new IOException("Did not find user id");
+		return uid.get().split("\t")[1];
 	}
 
 }

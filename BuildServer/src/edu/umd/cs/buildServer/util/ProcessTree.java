@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -240,36 +239,28 @@ public final class ProcessTree {
    
     }
 
-    private void drainToLog(final InputStream in) {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    BufferedReader r = new BufferedReader(
-                            new InputStreamReader(in));
+	private void drainToLog(final InputStream in) {
+		Thread t = new Thread(() -> {
+				try (BufferedReader r = new BufferedReader(new InputStreamReader(in))) {
 
-                    while (true) {
-                        String txt = r.readLine();
-                        if (txt == null)
-                            return;
-                        log.debug("process generated: " + txt);
-                    }
-                } catch (IOException e) {
-                    if (!e.getMessage().equals("Stream closed"))
-                        log.warn("error while draining", e);
+					r.lines().forEach(txt -> log.debug("process generated: " + txt));
 
-                } finally {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        assert false;
-                    }
-                }
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+				} catch (IOException e) {
+					if (!e.getMessage().equals("Stream closed"))
+						log.warn("error while draining", e);
 
-    }
+				} finally {
+					try {
+						in.close();
+					} catch (IOException e) {
+						assert false;
+					}
+				}
+			}
+		);
+		t.setDaemon(true);
+		t.start();
+
+	}
 
 }

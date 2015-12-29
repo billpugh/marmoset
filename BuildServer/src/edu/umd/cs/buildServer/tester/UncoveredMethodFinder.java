@@ -203,24 +203,20 @@ public class UncoveredMethodFinder {
 
 	public List<StackTraceElement> findUncoveredMethods() {
 		List<StackTraceElement> result = new LinkedList<StackTraceElement>();
-		for (Map.Entry<String, SortedMap<Integer, MethodRef>> e : methodLinenumberMap
-				.entrySet()) {
-			String sourceFile = e.getKey();
-
+		methodLinenumberMap.forEach(( sourceFile,methodMap ) -> {
+		
 			FileWithCoverage fileWithCoverage = codeCoverageResults
 					.getFileWithCoverage(sourceFile);
 			// If for some reason we can't find coverage for the classfile
 			if (fileWithCoverage == null)
-				continue;
+				return;
 
 			// Skip source files that have zero coverage
 			if (!fileWithCoverage.isAnythingCovered())
-				continue;
+				return;
 
 			SortedSet<Integer> uncoveredMethods = fileWithCoverage
 					.getUncoveredMethods();
-
-			SortedMap<Integer, MethodRef> methodMap = e.getValue();
 
 			for (Integer uncoveredMethodLineNumber : uncoveredMethods) {
 				SortedMap<Integer, MethodRef> tailMap = methodMap
@@ -239,7 +235,7 @@ public class UncoveredMethodFinder {
 						unconveredMethod.methodName, sourceFile,
 						uncoveredMethodLineNumber));
 			}
-		}
+		});
 		return result;
 	}
 
