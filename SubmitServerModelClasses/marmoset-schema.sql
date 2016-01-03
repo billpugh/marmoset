@@ -171,6 +171,7 @@ CREATE TABLE `courses` (
   `browser_editing` varchar(20) NOT NULL DEFAULT 'prohibited',
   `sections` text,
   `help_requests_allowed` tinyint(1) NOT NULL DEFAULT '0',
+  `use_default_buildservers` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`course_pk`),
   UNIQUE KEY `submit_key` (`submit_key`),
   UNIQUE KEY `buildserver_key` (`buildserver_key`)

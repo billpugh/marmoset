@@ -86,3 +86,4 @@ ALTER TABLE  `buildservers` ADD  `java_version` VARCHAR( 40 ) NOT NULL DEFAULT  
 ALTER TABLE  `test_outcomes` CHANGE `outcome`
   `outcome` enum('passed','failed','could_not_run','warning','error','not_implemented','huh','timeout','uncovered_method','missing_component', 'fork_bomb') NOT NULL DEFAULT 'passed';
 
+ALTER TABLE `courses` ADD `use_default_buildservers` TINYINT(1) NOT NULL DEFAULT '1' AFTER `help_requests_allowed`;
