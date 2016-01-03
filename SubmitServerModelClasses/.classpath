@@ -5,7 +5,6 @@
 	<classpathentry kind="lib" path="lib/dbunit.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.13-bin.jar"/>
 	<classpathentry kind="lib" path="lib/jsr305.jar"/>
 	<classpathentry kind="lib" path="lib/guava-11.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/annotations.jar"/>
@@ -14,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/commons-io.jar" sourcepath="/export/home/jspacco/software/commons-io-1.1-src/src/java"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.38-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
