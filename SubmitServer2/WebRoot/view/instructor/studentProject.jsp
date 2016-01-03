@@ -31,8 +31,19 @@
 
 <!DOCTYPE HTML>
 <html>
-<ss:head
+<head>
+<ss:headContent
 	title="Project ${project.projectNumber} for ${course.courseName}" />
+	    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/blitzer/jquery-ui.css"
+    type="text/css" />
+<script src="${jsBase}/jquery.easy-confirm-dialog.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $(".confirm").easyconfirm();
+  });
+    </script>
+    </head>
 
 <body>
 <ss:header />
@@ -44,6 +55,34 @@
 <ss:studentPicture />
 <h2><c:out value="${studentRegistration.fullname}"/> </h2>
 <p><ss:studentEmail/>
+
+<c:if test="${projectPartner != null}">
+<c:url var="removePartnerLink" value="/action/instructor/ClearPartner">
+	<c:param name="studentRegistrationPK" value="${studentRegistration.studentRegistrationPK}"/>
+	<c:param name="projectPK" value="${project.projectPK}"/>
+</c:url>
+<p>Partnered with
+	<c:out value="${projectPartner.fullname}"/>
+	(<a href="${removePartnerLink}" class="confirm" 
+	title="Are you sure you want to remove their partner selection?">remove</a>)
+		
+	</p>
+
+</c:if>
+
+<c:if test="${studentSubmitStatus.extension > 0}">
+<p>
+Current Extension: ${studentSubmitStatus.extension}<br></c:if>
+
+<c:url var="grantExtensionLink" value="/view/instructor/grantExtension.jsp">
+	<c:param name="studentRegistrationPK" value="${studentRegistration.studentRegistrationPK}"/>
+	<c:param name="projectPK" value="${project.projectPK}"/>
+</c:url>
+<p>
+<a href="${grantExtensionLink}"> Grant 
+<c:out value="${studentRegistration.fullname}"/>
+an extension on project
+<c:out value="${project.projectNumber}"/></a>
 
 <c:set var="testCols" value="2" />
 
@@ -58,23 +97,6 @@
 		<c:set var="testCols" value="${2+testCols}" />
 	</c:if>
 </c:if>
-
-
-
-<p>
-<c:url var="grantExtensionLink" value="/view/instructor/grantExtension.jsp">
-	<c:param name="studentRegistrationPK" value="${studentRegistration.studentRegistrationPK}"/>
-	<c:param name="projectPK" value="${project.projectPK}"/>
-</c:url>
-
-<p>
-<c:if test="${studentSubmitStatus.extension > 0}">
-Current Extension: ${studentSubmitStatus.extension}<br></c:if>
-<a href="${grantExtensionLink}"> Grant 
-<c:out value="${studentRegistration.fullname}"/>
-an extension on project
-<c:out value="${project.projectNumber}"/></a>
-
 
 <h2>Submissions</h2>
 <table>
