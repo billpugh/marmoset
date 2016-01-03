@@ -74,8 +74,7 @@ public class SelectPartner extends SubmitServerServlet {
 					getSubmitServerServletLog(), strictParameterChecking());
 			StudentRegistration studentRegistration = (StudentRegistration) request
 					.getAttribute(STUDENT_REGISTRATION);
-			Project project = (Project) request
-			.getAttribute(PROJECT);
+			Project project = (Project) request.getAttribute(PROJECT);
 
 			if (!project.isPair())
 				throw new ServletException("Not a pair project");
