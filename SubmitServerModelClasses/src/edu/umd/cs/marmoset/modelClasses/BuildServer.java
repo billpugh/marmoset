@@ -147,13 +147,14 @@ public class BuildServer implements Comparable<BuildServer> {
 			throws SQLException {
 		String query = Queries.makeInsertOrUpdateStatement(
 				new String[] {"name", "remote_host","last_success" ,"last_built_submission_pk", "last_request_submission_pk", "system_load", "kind", "courses", "last_request" }, 
-				new String[] {"remote_host", "last_success","last_built_submission_pk", "last_request_submission_pk", "system_load", "kind"}, 
+				new String[] {"remote_host", "last_success","last_built_submission_pk", "last_request_submission_pk", "system_load"}, 
 				TABLE_NAME);
 		@Submission.PK int submissionPK = submission.getSubmissionPK();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		try {
-			Queries.setInsertOrUpdateStatement(stmt,
-					name, remoteHost, now, submissionPK, 0, load, TestRun.Kind.UNKNOWN);
+			Queries.setStatement(stmt,
+					name, remoteHost, now, submissionPK, 0, load, TestRun.Kind.UNKNOWN, "", now,
+					 remoteHost, now, submissionPK,0, load);
 			stmt.executeUpdate();
 		} finally {
 			Queries.closeStatement(stmt);
