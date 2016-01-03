@@ -78,8 +78,8 @@
 		<javac
 			srcdir="src"
 			destdir="${classes.dir}"
-			source="1.7"
-			target="1.7"
+			source="1.8"
+			target="1.8"
 			includeantruntime="false"
 			debug="on">
 			<classpath refid="modelClasses.classpath"/>
