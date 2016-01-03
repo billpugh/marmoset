@@ -7,6 +7,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import edu.umd.cs.submitServer.GradeServerDatabaseProperties;
+import edu.umd.cs.submitServer.WebConfigProperties;
 
 public abstract class GradeServerInterfaceServlet extends SubmitServerServlet {
 
@@ -17,10 +18,9 @@ public abstract class GradeServerInterfaceServlet extends SubmitServerServlet {
 		super.init();
 		ServletContext servletContext = getServletContext();
 
+		if (WebConfigProperties.get().getProperty("grades.driver") != null)
 			gradeServerDatabaseProperties = new GradeServerDatabaseProperties(
 					servletContext);
-
-
 	}
 
 	/**
