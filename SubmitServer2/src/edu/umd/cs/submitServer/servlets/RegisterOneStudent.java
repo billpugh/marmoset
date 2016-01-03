@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import edu.umd.cs.marmoset.modelClasses.Course;
 import edu.umd.cs.marmoset.modelClasses.Student;
@@ -37,6 +38,7 @@ import edu.umd.cs.marmoset.modelClasses.StudentRegistration;
 import edu.umd.cs.submitServer.ClientRequestException;
 import edu.umd.cs.submitServer.RequestParser;
 import edu.umd.cs.submitServer.StudentForUpload;
+import edu.umd.cs.submitServer.UserSession;
 
 public class RegisterOneStudent extends SubmitServerServlet {
 
@@ -84,15 +86,20 @@ public class RegisterOneStudent extends SubmitServerServlet {
 			conn.commit();
 			transactionSuccess = true;
 
-			
+			HttpSession session = request.getSession();
+			UserSession userSession = (UserSession) session
+	        .getAttribute(USER_SESSION);
 			String redirectUrl;
 			if (course != null)
 			    redirectUrl = request.getContextPath()
 					+ "/view/instructor/course.jsp?coursePK="
 					+ course.getCoursePK();
-			else
+			else if (!userSession.isSuperUser()) 
 			    redirectUrl = request.getContextPath()
-                + "/view/index.jsp";
+                + "/view/admin/index.jsp";
+			else redirectUrl = request.getContextPath()
+          + "/view/index.jsp";
+			  
 			    
 			response.sendRedirect(redirectUrl);
 		} catch (ClientRequestException e) {
