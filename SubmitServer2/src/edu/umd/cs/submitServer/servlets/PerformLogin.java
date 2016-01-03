@@ -54,7 +54,8 @@ import edu.umd.cs.submitServer.WebConfigProperties;
 
 
 public class PerformLogin extends SubmitServerServlet {
-	private static final WebConfigProperties webProperties = WebConfigProperties.get();
+	private static final String REQUEST_LOGIN_AGAIN = "/authenticate/ldap/index.jsp";
+  private static final WebConfigProperties webProperties = WebConfigProperties.get();
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -138,13 +139,13 @@ public class PerformLogin extends SubmitServerServlet {
 			getAuthenticationLog().error(e.getMessage(), e);
 			request.setAttribute("canNotFindDirectoryID", Boolean.TRUE);
 			request.setAttribute("campusUID", campusUID);
-			request.getRequestDispatcher("/index.jsp").forward(request,
+			request.getRequestDispatcher(REQUEST_LOGIN_AGAIN).forward(request,
 					response);
 		} catch (BadPasswordException e) {
 			getAuthenticationLog().error(e.getMessage(), e);
 			request.setAttribute("badPassword", Boolean.TRUE);
 			request.setAttribute("campusUID", campusUID);
-			request.getRequestDispatcher("/index.jsp").forward(request,
+			request.getRequestDispatcher(REQUEST_LOGIN_AGAIN).forward(request,
 					response);
 		} catch (ClientRequestException e) {
 			getAuthenticationLog().error(e.getMessage(), e);
@@ -153,7 +154,7 @@ public class PerformLogin extends SubmitServerServlet {
 			} else {
 				request.setAttribute("otherError", Boolean.TRUE);
 			}
-			request.getRequestDispatcher("/index.jsp").forward(request,
+			request.getRequestDispatcher(REQUEST_LOGIN_AGAIN).forward(request,
 					response);
 		} finally {
 			releaseConnection(conn);
