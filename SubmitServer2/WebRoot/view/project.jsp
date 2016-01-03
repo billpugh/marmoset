@@ -36,8 +36,23 @@
       <c:url var="codemirror" value="/codemirror" />
        <link rel="stylesheet" href="${codemirror}/lib/codemirror.css">
          <c:url var="jsBase" value="/js" />
+  <script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
+	type="text/javascript"></script>       
   <script src="${jsBase}/jquery.MultiFile.js" type="text/javascript"></script>
     </head>
+   <script type="text/javascript">
+                function validatePartner() {
+                var val = $("#newSkill option:selected").text();
+                if (val == "choose partner") {
+                  alert("You have to choose a partner");
+                  return false;
+                }
+                return confirm('Choose ' + val + ' as your partner?');
+                };
+
+        </script>
+
 
 <body>
 <ss:header />
@@ -59,11 +74,13 @@
 			value="/action/SelectPartner">
 		</c:url>
 
-<form method="POST" action="${choosePartnerLink}">
+<form method="POST" action="${choosePartnerLink}"  onsubmit="return validatePartner()">
 <input type="hidden" name="projectPK" value="${project.projectPK}"/>
 <p>Select partner:
-<select name="partnerPK">
+<select name="partnerPK" required="required">
+<option value="" value="please choose"/>
 <c:forEach var="partner" items="${potentialPartners}">
+
 <option value="${partner.studentRegistrationPK}"><c:out value="${partner.fullname}"/></option>
 </c:forEach>
 </select>
