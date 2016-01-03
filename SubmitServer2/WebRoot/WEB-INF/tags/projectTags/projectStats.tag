@@ -18,7 +18,7 @@
 									value="${testProperties.requiredFiles}" /></c:if> 
 						<c:choose>
 
-							<c:when test="${testProperties.framework.java}">
+							<c:when test="${testProperties.java}">
 								<li>Java source version: <c:out
 										value="${testProperties.javaSourceVersion}" /> <c:if
 										test="${testProperties.performCodeCoverage}">
@@ -66,7 +66,7 @@
         </c:url>
 
         <p><a href="${smallfailedBackgroundRetestLink}"> ${inconsistentResults} submissions with inconsistent
-        results (from a background test)
+        results from a background test
          </a></p>
     </c:if>
 
