@@ -3,6 +3,7 @@
 <%@ taglib prefix="ss" uri="http://www.cs.umd.edu/marmoset/ss"%>
                 
  <title><c:out value="${title}"/></title>
+ <meta name=viewport content="width=device-width, initial-scale=1">
  <c:url var="css" value="/styles.css"/>
  <link rel="stylesheet" type="text/css" href="${css}">
  <script
