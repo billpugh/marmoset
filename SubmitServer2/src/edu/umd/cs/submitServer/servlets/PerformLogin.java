@@ -80,7 +80,7 @@ public class PerformLogin extends SubmitServerServlet {
 		String campusUID = parser.getOptionalCheckedParameter("loginName");
 		if (campusUID == null || campusUID.trim().equals("")) {
 			request.setAttribute("missingIDOrPasswordException", Boolean.TRUE);
-			request.getRequestDispatcher("/index.jsp").forward(request,
+			request.getRequestDispatcher(REQUEST_LOGIN_AGAIN).forward(request,
 					response);
 			return;
 		}
@@ -88,7 +88,7 @@ public class PerformLogin extends SubmitServerServlet {
 		if (!superUserLogin  &!skipAuthentication
 				&& (uidPassword == null || uidPassword.trim().equals(""))) {
 			request.setAttribute("missingIDOrPasswordException", Boolean.TRUE);
-			request.getRequestDispatcher("/index.jsp").forward(request,
+			request.getRequestDispatcher(REQUEST_LOGIN_AGAIN).forward(request,
 					response);
 			return;
 		}
@@ -127,7 +127,7 @@ public class PerformLogin extends SubmitServerServlet {
 			}
 
 			// otherwise redirect to the main view page
-			response.sendRedirect(request.getContextPath() + "/view/index.jsp");
+			response.sendRedirect("/view/index.jsp");
 		} catch (SQLException e) {
 			handleSQLException(e);
 			throw new ServletException(e);
