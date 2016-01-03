@@ -28,6 +28,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions"
     prefix="fn" %>
 <%@ taglib prefix="ss" uri="http://www.cs.umd.edu/marmoset/ss"%>
+<c:url var="jsBase" value="/js" />
 
 <!DOCTYPE HTML>
 <html>
