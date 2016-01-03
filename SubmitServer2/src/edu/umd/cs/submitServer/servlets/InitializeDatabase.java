@@ -41,6 +41,7 @@ import javax.servlet.http.HttpSession;
 
 import edu.umd.cs.marmoset.modelClasses.Student;
 import edu.umd.cs.submitServer.RequestParser;
+import edu.umd.cs.submitServer.WebConfigProperties;
 
 /**
  * This servlet creates an admin user in the database if its empty, otherwise throws an exception.
@@ -75,27 +76,38 @@ public class InitializeDatabase extends GradeServerInterfaceServlet {
 
 			if (Student.existAny(conn))
 				throw new ServletException("Submit server already initialized");
-			
-			gradesConn = getGradesConnection();
+			WebConfigProperties webProperties = WebConfigProperties.get();
+			boolean skipAuthentication = "true".equals(webProperties.getProperty(SKIP_AUTHENTICATION));
 
-			String query = "SELECT lastName, firstName, uid"
-					+ " FROM submitexport " + " WHERE directoryId = ?"
-					+ " LIMIT 1";
-			PreparedStatement stmt = gradesConn.prepareStatement(query);
-			stmt.setString(1, loginName);
-			ResultSet rs = stmt.executeQuery();
+      Student s = new Student();
+      if (skipAuthentication) {
+        s.setLoginName(loginName);
+        s.setLastname("Doe");
+        s.setFirstname(loginName);
+        s.setCampusUID("");
+      } else {
+        gradesConn = getGradesConnection();
 
-			if (!rs.next())
-				throw new ServletException("Can't import that user from grades");
-			
-			// TODO(rwsims): this information should be populated by the authentication mechanism.
-			Student s = new Student();
-			int col = 1;
-			s.setLastname(rs.getString(col++));
-			s.setFirstname(rs.getString(col++));
-			s.setCampusUID(rs.getString(col++));
-			s.setLoginName(loginName);
-			s.setCanImportCourses(true);
+        String query = "SELECT lastName, firstName, uid" + " FROM submitexport " + " WHERE directoryId = ?"
+            + " LIMIT 1";
+        PreparedStatement stmt = gradesConn.prepareStatement(query);
+        stmt.setString(1, loginName);
+        ResultSet rs = stmt.executeQuery();
+
+        if (!rs.next())
+          throw new ServletException("Can't import that user from grades");
+
+        // TODO(rwsims): this information should be populated by the
+        // authentication mechanism.
+        int col = 1;
+        s.setLastname(rs.getString(col++));
+        s.setFirstname(rs.getString(col++));
+        s.setCampusUID(rs.getString(col++));
+        s.setLoginName(loginName);
+        rs.close();
+        stmt.close();
+      }
+      s.setCanImportCourses(true);
 			s = s.insertOrUpdateCheckingLoginNameAndCampusUID(conn);
 
 			Student superuser = getOrCreateSuperuserFor(s, conn);
@@ -103,8 +115,7 @@ public class InitializeDatabase extends GradeServerInterfaceServlet {
 			// Sets required information in the user's session.
 			PerformLogin.setUserSession(session, superuser, conn);
 
-			rs.close();
-			stmt.close();
+
 			response.sendRedirect(request.getContextPath() + "/view/admin/index.jsp");
 		} catch (SQLException e) {
 			handleSQLException(e);
