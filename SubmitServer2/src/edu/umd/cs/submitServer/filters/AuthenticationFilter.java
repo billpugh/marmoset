@@ -138,6 +138,7 @@ public class AuthenticationFilter extends SubmitServerFilter {
 
 			response.sendRedirect(login);
 		} else {
+		  request.setAttribute("authType", authType);
 			Connection conn = null;
 			try {
 				conn = getConnection();
