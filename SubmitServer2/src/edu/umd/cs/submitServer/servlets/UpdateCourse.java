@@ -62,6 +62,7 @@ public class UpdateCourse extends SubmitServerServlet {
 		        parser.getCheckedParameter("browserEditing"));
 		boolean download = parser.getCheckbox("download");
 		boolean helpRequests = parser.getCheckbox("helpRequests");
+		boolean useDefaultBuildservers = parser.getCheckbox("useDefaultBuildservers");
 
 		Connection conn = null;
 		try {
@@ -75,6 +76,7 @@ public class UpdateCourse extends SubmitServerServlet {
 			course.setAllowsBaselineDownload(download);
 			course.setBrowserEditing(browserEditing);
 			course.setAllowsHelpRequests(helpRequests);
+			course.setUseDefaultBuildservers(useDefaultBuildservers);
 			
 			// insert the course
 			course.update(conn);
