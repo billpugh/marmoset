@@ -542,6 +542,12 @@ jQuery(document).ready(function ($) {
                     <td class="input"><input name="helpRequests" type="checkbox" ${ss:isChecked(course.allowsHelpRequests)}  />
                     </td>
                 </tr>
+                        <tr>
+            <td class="label">Use default buildservers:</td>
+            <td class="input"><input name="useDefaultBuildservers" type="checkbox"  ${ss:isChecked(course.useDefaultBuildservers)}  />
+            </td>
+        </tr>
+
                   <tr>
            <td class="label">Editing source code in browser:</td>
             <td class="input">

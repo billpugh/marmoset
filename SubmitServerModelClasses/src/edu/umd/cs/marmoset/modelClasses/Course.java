@@ -103,7 +103,8 @@ public class Course {
             "submit_key",
             "browser_editing",
             "sections",
-            "help_requests_allowed"
+            "help_requests_allowed",
+            "use_default_buildservers"
             
 	};
 
@@ -126,6 +127,7 @@ public class Course {
 	private BrowserEditing browserEditing = BrowserEditing.DISCOURAGED;
 	private boolean allowsBaselineDownload;
 	private boolean allowsHelpRequests;
+	private boolean useDefaultBuildservers;
 
 	public Course() {
 
@@ -295,7 +297,13 @@ public class Course {
     }
 
 
-    public void insert(Connection conn)
+    public boolean isUseDefaultBuildservers() {
+		return useDefaultBuildservers;
+	}
+	public void setUseDefaultBuildservers(boolean useDefaultBuildservers) {
+		this.useDefaultBuildservers = useDefaultBuildservers;
+	}
+	public void insert(Connection conn)
 	throws SQLException
 	{
 	    if (buildserverKey != null)
@@ -334,6 +342,7 @@ public class Course {
 		stmt.setString(col++, browserEditing.name().toLowerCase());
 		stmt.setString(col++, sections);
 		stmt.setBoolean(col++, isAllowsHelpRequests());
+		stmt.setBoolean(col++, isUseDefaultBuildservers());
 		return col;
 	}
 
@@ -375,6 +384,7 @@ public class Course {
 		setBrowserEditing(BrowserEditing.valueOfAnyCase(resultSet.getString(startingFrom++)));
 		this.sections = resultSet.getString(startingFrom++);
 		setAllowsHelpRequests(resultSet.getBoolean(startingFrom++));
+		setUseDefaultBuildservers(resultSet.getBoolean(startingFrom++));
 		return startingFrom;
 	}
 
@@ -596,18 +606,16 @@ public class Course {
    
             private static PreparedStatement queryAllButByBuildserverKey(Connection conn, String attributes, String k[]) throws SQLException {
                 PreparedStatement stmt = null;
-                String query = " SELECT " + attributes + "  FROM courses  ";
-                if (k.length > 0)
-                    query += "WHERE ";
+                String query = " SELECT " + attributes + "  FROM courses" 
+                + " WHERE use_default_buildservers = ?";
                 for (int i = 0; i < k.length; i++) {
-                    if (i > 0)
-                        query += " AND ";
-                    query += " buildserver_key != ? ";
+                    query += " AND buildserver_key != ? ";
                 }
 
                 stmt = conn.prepareStatement(query);
+                stmt.setBoolean(1, true);
                 for (int i = 0; i < k.length; i++) {
-                    stmt.setString(i + 1, k[i]);
+                    stmt.setString(i + 2, k[i]);
                 }
 
                 return stmt;

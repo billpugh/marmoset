@@ -289,6 +289,7 @@ public class RequestParser {
                 getCheckedParameter("browserEditing")));
 		course.setAllowsBaselineDownload(getCheckbox("download"));
 		course.setAllowsHelpRequests(getCheckbox("helpRequests"));
+		course.setUseDefaultBuildservers(getCheckbox("useDefaultBuildservers"));
 		return course;
 	}
 

@@ -101,6 +101,11 @@
             <td class="input"><input name="helpRequests" type="checkbox" checked  />
             </td>
         </tr>
+        <tr>
+            <td class="label">Use default buildservers:</td>
+            <td class="input"><input name="useDefaultBuildservers" type="checkbox" checked  />
+            </td>
+        </tr>
          <tr>
            <td class="label">Default for editing source code in browser:</td>
             <td class="input">
