@@ -84,10 +84,8 @@
 		<filter-name>MonitorSlowTransactionsFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	<filter-mapping>
-		<filter-name>ServerStatusFilter</filter-name>
-		<url-pattern>/systemStatus.jsp</url-pattern>
-	</filter-mapping>
+	
+	
 
     <filter>
 	   <filter-name>NeedsInitializationFilter</filter-name>
@@ -103,6 +101,10 @@
        <filter-name>ServerStatusFilter</filter-name>
        <filter-class>edu.umd.cs.submitServer.filters.ServerStatusFilter</filter-class>
     </filter>
+    <filter-mapping>
+		<filter-name>ServerStatusFilter</filter-name>
+		<url-pattern>/systemStatus.jsp</url-pattern>
+	</filter-mapping>
   <filter>
        <filter-name>DemoAccountsFilter</filter-name>
        <filter-class>edu.umd.cs.submitServer.filters.DemoAccountsFilter</filter-class>
