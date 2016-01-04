@@ -29,6 +29,10 @@
 
 package edu.umd.cs.marmoset.utilities;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+
 import edu.umd.cs.marmoset.modelClasses.HTML;
 
 /**
@@ -44,6 +48,16 @@ public final class XSSScrubber {
         return s;
     }
 
+    
+    public static String urlEncodePath(String s) {
+    	try {
+    	if (s.contains("%2F") || s.contains("$2f"))
+    		s = URLDecoder.decode(s, "UTF-8");
+    	return URLEncoder.encode(s, "UTF-8");
+    	} catch (UnsupportedEncodingException e) {
+    		throw new RuntimeException(e);
+    	}
+    }
 
     /**
      * 

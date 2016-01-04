@@ -5,7 +5,7 @@
     <c:url var="loginLink" value="/authenticate/ldap/PerformLogin"/>
 	<form id="PerformLogin" method="post" action="${loginLink}" >
 		<c:if test="${not empty param.target}">
-	    <input type="hidden" name="target" value="${ss:urlEncode(param.target)}">
+	    <input type="hidden" name="target" value="${ss:urlEncodePath(param.target)}">
 	    </c:if>
 	    <table class="form">
 	    <tr><th colspan=2><ss:brandingProperty key="branding.login.prompt" safeHtml="true"/></th></tr>

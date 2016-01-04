@@ -578,6 +578,18 @@
 
   <function>
   <description>
+  URLEncodePath
+  </description>
+  <name>urlEncodePath</name>
+  <function-class>edu.umd.cs.marmoset.utilities.XSSScrubber</function-class>
+  <function-signature>java.lang.String urlEncodePath(java.lang.String)</function-signature>
+  <example>
+    Name: ${ss:urlEncodePath(strToScrub)}
+  </example>
+  </function>
+
+  <function>
+  <description>
   URLEncode
   </description>
   <name>urlEncode</name>
