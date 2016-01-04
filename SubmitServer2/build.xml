@@ -100,7 +100,7 @@
     </javac>
   </target>
 
-  <target name="errorprone" depends="init, modelClasses,libs,cpwebxml">
+  <target name="errorprone" depends="init, modelClasses,libs,copyProperties">
     <javac
       encoding="utf-8"
       includes="**/*.java"
@@ -119,7 +119,7 @@
   </target>
 
   <!-- compile rule: Compile the servlets -->
-  <target name="compile" depends="init, modelClasses,libs,cpwebxml">
+  <target name="compile" depends="init, modelClasses,libs,copyProperties">
     <javac
       encoding="utf-8"
       includes="**/*.java"
@@ -139,9 +139,7 @@
     </copy>
   </target>
 
-
-  <!-- Copy the web.xml file into WEB-INF, replacing filter tokens with ANT vars -->
-  <target name="cpwebxml">
+  <target name="copyProperties">
      <concat destfile="${src}/web.properties">
      <fileset file="web.properties" />
      <fileset file="local.web.properties" />
@@ -165,7 +163,7 @@
   </target>
 
   <!-- Create a war file-->
-  <target name="war" depends="compile,cpwebxml,gwtc,buildserver.zip">
+  <target name="war" depends="compile,copyProperties,gwtc,buildserver.zip">
     <property name="warfile" value="submitServer.war"/>
     <copy todir="${bin}" overwrite="true">
       <fileset dir="${src}">
@@ -266,7 +264,7 @@
     <antcall target="generic.install"/>
   </target>
 
-  <target name="generic.install" depends="clean,cpwebxml">
+  <target name="generic.install" depends="clean,copyProperties">
     <!--
     Use default name for warfile if the warfile hasn't yet been named.
     -->
