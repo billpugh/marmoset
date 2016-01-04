@@ -76,7 +76,7 @@ public class PerformLogin extends SubmitServerServlet {
 		}
 		boolean skipAuthentication = "true".equals(webProperties.getProperty(SKIP_AUTHENTICATION));
 
-		session = request.getSession(true);
+
 		String campusUID = parser.getOptionalCheckedParameter("loginName");
 		if (campusUID == null || campusUID.trim().equals("")) {
 			request.setAttribute("missingIDOrPasswordException", Boolean.TRUE);
@@ -92,6 +92,7 @@ public class PerformLogin extends SubmitServerServlet {
 					response);
 			return;
 		}
+    session = request.getSession(true);
 		String keepMeLoggedIn = parser.getOptionalPasswordParameter("keepMeLoggedIn");
 		
 		if ("checked".equals(keepMeLoggedIn) && !campusUID.endsWith("-admin"))
