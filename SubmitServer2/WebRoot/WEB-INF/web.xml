@@ -10,19 +10,6 @@
    <listener-class>edu.umd.review.server.ReviewServletConfig</listener-class>
 </listener>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Everything</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
-		<!--
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-		-->
-	</security-constraint>
-	
-
 <session-config>
    <tracking-mode>COOKIE</tracking-mode>
 </session-config>
