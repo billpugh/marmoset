@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -42,7 +43,9 @@ public class ListProcesses {
 		int myPid = MarmosetUtilities.getPid();
 		Path fd = Paths.get("/proc/" + myPid + "/fd");
 		
-		Files.list(fd).map(ListProcesses::getRealPath).forEach(s -> result.add(s));
+		try (Stream<Path> contents = Files.list(fd) ) {
+			contents.map(ListProcesses::getRealPath).forEach(s -> result.add(s));
+		}
 		
 		return result;
 		
@@ -166,7 +169,10 @@ public class ListProcesses {
 		callback.started();
 		long count0 = SystemInfo.getOpenFD();
 		 Multiset<String> initiallyOpen = openFiles();
-		List<Path> procs = Files.list(proc).filter(ListProcesses::isProcess).collect(Collectors.toList());
+		 List<Path> procs;
+		 try (Stream<Path> procStream = Files.list(proc)) {
+			 procs = procStream.filter(ListProcesses::isProcess).collect(Collectors.toList());
+		 }
 		long count1 = SystemInfo.getOpenFD();
 		procs.forEach(p -> {
 			
