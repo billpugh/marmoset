@@ -2,16 +2,15 @@ package edu.umd.cs.buildServer.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -41,11 +40,8 @@ public class ListProcesses {
 	public static  Multiset<String> openFiles() throws IOException {
 		Multiset<String> result =  TreeMultiset.create();
 		int myPid = MarmosetUtilities.getPid();
-		Path fd = Paths.get("/proc/" + myPid + "/fd");
-		
-		try (Stream<Path> contents = Files.list(fd) ) {
-			contents.map(ListProcesses::getRealPath).forEach(s -> result.add(s));
-		}
+		for(File f :  new File("/proc/" + myPid + "/fd").listFiles()) 
+			result.add(f.getCanonicalPath());
 		
 		return result;
 		
@@ -141,6 +137,11 @@ public class ListProcesses {
 			return r.readLine();
 		}
 	}
+	public static String getLine(File f) throws IOException {
+		try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+			return r.readLine();
+		}
+	}
 
 	public static boolean isProcess(Path p) {
 		try {
@@ -152,12 +153,24 @@ public class ListProcesses {
 
 	}
 
+	public static boolean isProcess(File file) {
+		try {
+			Integer.parseInt(file.getName());
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
 	private static int getPidFromProcDirectory(Path p) {
 		return Integer.parseInt(p.getName(1).toString());
 	}
 
+	private static int getPidFromProcDirectory(File p) {
+		return Integer.parseInt(p.getName());
+	}
 	private static void listProcessesUsingProc(ListProcesses.AnalyzePS callback, Logger log) throws IOException {
 		Path proc = Paths.get("/proc");
+		
 		if (!Files.isDirectory(proc))
 			throw new IOException("/proc not available");
 
@@ -168,20 +181,17 @@ public class ListProcesses {
 		Date now = new Date();
 		callback.started();
 		long count0 = SystemInfo.getOpenFD();
-		 Multiset<String> initiallyOpen = openFiles();
-		 List<Path> procs;
-		 try (Stream<Path> procStream = Files.list(proc)) {
-			 procs = procStream.filter(ListProcesses::isProcess).collect(Collectors.toList());
-		 }
-		long count1 = SystemInfo.getOpenFD();
-		procs.forEach(p -> {
-			
+		// Multiset<String> initiallyOpen = openFiles();
+		 File[] processDirs = new File("/proc").listFiles(ListProcesses::isProcess);
+		 long count1 = SystemInfo.getOpenFD();
+		 for(File p : processDirs) {
+					
 			try {
-				int pid = getPidFromProcDirectory(p);
-
+				
 				String userid = getLoginUID(p);
 				if (!myUserId.equals(userid))
 					return;
+				int pid = getPidFromProcDirectory(p);
 				String contents = getStat(p);
 				String fields[] = contents.split(" ");
 				int pid0 = Integer.parseInt(fields[0]);
@@ -194,22 +204,21 @@ public class ListProcesses {
 				}
 				log.info("proc: " + userid + " :: " + contents);
 				callback.process(pid, ppid, pgrp, state, now, filename);
-			} catch (java.nio.file.NoSuchFileException e) {
+			} catch (IOException e) {
 				// must have died before we could examine it
 			} catch (Exception e) {
 				log.error("Error examining " + p, e);
 
 			}
 
-		});
+		};
 		long count2 = SystemInfo.getOpenFD();
 		 Multiset<String> openAtEnd = openFiles();
 			
 		if (count2 > 10 && (count2 > count0 || count2 > SystemInfo.getMaxFD()/2)) {
 			log.warn(String.format("Open file descriptors: %d -> %d -. %d (max %d)",
 					count0, count1, count2, SystemInfo.getMaxFD()));
-			openAtEnd.removeAll(initiallyOpen);
-			log.warn(openAtEnd.size() + " additional file descriptors");
+			log.warn(openAtEnd.size() + " file descriptors");
 			openAtEnd.entrySet().forEach(log::warn);
 		}
 		
@@ -220,8 +229,22 @@ public class ListProcesses {
 		return getLine(p.resolve("stat"));
 	}
 
+	private static String getStat(File p) throws IOException {
+		return getLine(new File(p, "stat"));
+	}
 	private static String getLoginUID(Path p) throws IOException {
 		try (BufferedReader r = Files.newBufferedReader(p.resolve("status"))) {
+			while(true) {
+				String s = r.readLine();
+				if (s == null)
+					throw new IOException("Did not find user id for proc " + p);
+				if (s.startsWith("Uid:"))
+					return s.split("\t")[1];
+			}
+		}
+	}
+	private static String getLoginUID(File p) throws IOException {
+		try (BufferedReader r =new BufferedReader(new FileReader(new File(p, "status")))) {
 			while(true) {
 				String s = r.readLine();
 				if (s == null)
