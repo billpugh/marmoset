@@ -65,6 +65,7 @@ import edu.umd.cs.marmoset.modelClasses.TestOutcome.OutcomeType;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.TestType;
 import edu.umd.cs.marmoset.modelClasses.TestProperties;
 import edu.umd.cs.marmoset.utilities.MarmosetUtilities;
+import edu.umd.cs.marmoset.utilities.SystemInfo;
 import edu.umd.cs.marmoset.utilities.TestPropertiesExtractor;
 import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
@@ -302,6 +303,12 @@ public abstract class BuildServer implements ConfigurationKeys {
 			int rc = doOneRequest();
 			log.trace("Done with request");
 
+			// Run GC, encourage finalizers to run
+			
+			System.gc();
+			String load = SystemInfo.getSystemLoad();
+			if (!SystemInfo.isGood(load))
+				log.warn("Load average: " + load);
 			// If there was no work, or if the project could
 			// not be built due to an internal error,
 			// sleep for a while. This will help avoid
