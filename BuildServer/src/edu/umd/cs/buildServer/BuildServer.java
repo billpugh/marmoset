@@ -308,7 +308,7 @@ public abstract class BuildServer implements ConfigurationKeys {
 			System.gc();
 			String load = SystemInfo.getSystemLoad();
 			if (!SystemInfo.isGood(load))
-				log.warn("Load average: " + load);
+				log.warn(load);
 			// If there was no work, or if the project could
 			// not be built due to an internal error,
 			// sleep for a while. This will help avoid
