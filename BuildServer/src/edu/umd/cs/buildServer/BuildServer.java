@@ -277,8 +277,12 @@ public abstract class BuildServer implements ConfigurationKeys {
 		createWorkingDirectories();
 		this.log = createLog(getBuildServerConfiguration(), useServletAppender());
 		log.info("BuildServer starting with pid " + MarmosetUtilities.getPid());
-		log.warn("Alpha test 2015-12-16 21:33");
-	       
+
+		{String load = SystemInfo.getSystemLoad();
+		if (!SystemInfo.isGood(load))
+			log.warn(load);
+		}
+		
 		prepareToExecute();
 
 		String supportedCourseList = getBuildServerConfiguration().getSupportedCourses();
