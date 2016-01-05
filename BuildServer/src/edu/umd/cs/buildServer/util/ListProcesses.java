@@ -112,7 +112,9 @@ public class ListProcesses {
 	}
 
 	public static String getLine(Path p) throws IOException {
-		return Files.lines(p).findFirst().get();
+		try (BufferedReader r = Files.newBufferedReader(p)) {
+			return r.readLine();
+		}
 	}
 
 	public static boolean isProcess(Path p) {
@@ -160,6 +162,8 @@ public class ListProcesses {
 				}
 				log.info("proc: " + userid + " :: " + contents);
 				callback.process(pid, ppid, pgrp, state, now, filename);
+			} catch (java.nio.file.NoSuchFileException e) {
+				// must have died before we could examine it
 			} catch (Exception e) {
 				log.error("Error examining " + p, e);
 
@@ -173,10 +177,15 @@ public class ListProcesses {
 	}
 
 	private static String getLoginUID(Path p) throws IOException {
-		Optional<String> uid = Files.lines(p.resolve("status")).filter(s -> s.startsWith("Uid:")).findFirst();
-		if (!uid.isPresent())
-			throw new IOException("Did not find user id");
-		return uid.get().split("\t")[1];
+		try (BufferedReader r = Files.newBufferedReader(p.resolve("status"))) {
+			while(true) {
+				String s = r.readLine();
+				if (s == null)
+					throw new IOException("Did not find user id for proc " + p);
+				if (s.startsWith("Uid:"))
+					return s.split("\t")[1];
+			}
+		}
 	}
 
 }
