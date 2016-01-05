@@ -40,8 +40,11 @@ public class ListProcesses {
 	public static  Multiset<String> openFiles() throws IOException {
 		Multiset<String> result =  TreeMultiset.create();
 		int myPid = MarmosetUtilities.getPid();
-		for(File f :  new File("/proc/" + myPid + "/fd").listFiles()) 
-			result.add(f.getCanonicalPath());
+		for(File f :  new File("/proc/" + myPid + "/fd").listFiles()) {
+			String canonicalPath = f.getCanonicalPath();
+			if (f.exists()) 
+				result.add(canonicalPath);
+		}
 		
 		return result;
 		
