@@ -154,6 +154,7 @@ public final class ProcessTree {
     }
 
     private void logProcesses(String title, Collection<Integer> pids) {
+    	if (pids.isEmpty()) return;
         log.info(String.format("%-14s: %s", title, pids));
         for (Integer pid : pids)
             logProcess(pid);
