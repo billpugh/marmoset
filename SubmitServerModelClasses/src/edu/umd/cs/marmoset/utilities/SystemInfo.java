@@ -81,8 +81,8 @@ public class SystemInfo {
             out.printf("memory %d/%d/%d, ", freeMemory, totalMemory, maxMemory);
         
         if (unixBean != null) {
-            long openFD = unixBean.getOpenFileDescriptorCount();
-            long maxFD = unixBean.getMaxFileDescriptorCount() ;
+            long openFD = getOpenFD();
+            long maxFD = getMaxFD() ;
             if (verbose || openFD > maxFD/2 || openFD > 450)
                 out.printf("fd %d/%d, ", openFD, maxFD);
         }
@@ -107,6 +107,16 @@ public class SystemInfo {
         if (s.isEmpty())
             return GOOD;
         return s.substring(0, s.length() -2);
+	}
+
+	public static long getMaxFD() {
+		if (unixBean == null) return -1;
+		return unixBean.getMaxFileDescriptorCount();
+	}
+
+	public static long getOpenFD() {
+		if (unixBean == null) return -1;
+		return unixBean.getOpenFileDescriptorCount();
 	}
 	
 	public static boolean isGood(String load) {
