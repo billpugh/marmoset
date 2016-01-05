@@ -153,7 +153,7 @@ public class ListProcesses {
 
 	}
 
-	public static boolean isProcess(File file) {
+	public static boolean fileIsProcess(File file) {
 		try {
 			Integer.parseInt(file.getName());
 			return true;
@@ -182,7 +182,7 @@ public class ListProcesses {
 		callback.started();
 		long count0 = SystemInfo.getOpenFD();
 		// Multiset<String> initiallyOpen = openFiles();
-		 File[] processDirs = new File("/proc").listFiles(ListProcesses::isProcess);
+		 File[] processDirs = new File("/proc").listFiles(ListProcesses::fileIsProcess);
 		 long count1 = SystemInfo.getOpenFD();
 		 for(File p : processDirs) {
 					
