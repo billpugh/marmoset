@@ -8,13 +8,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.Optional;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import edu.umd.cs.marmoset.utilities.MarmosetUtilities;
+import edu.umd.cs.marmoset.utilities.SystemInfo;
 
 public class ListProcesses {
 
@@ -142,8 +144,11 @@ public class ListProcesses {
 		log.info("My userID: " + myUserId);
 		Date now = new Date();
 		callback.started();
-		Files.list(proc).filter(ListProcesses::isProcess).forEach(p -> {
-
+		long count0 = SystemInfo.getOpenFD();
+		List<Path> procs = Files.list(proc).filter(ListProcesses::isProcess).collect(Collectors.toList());
+		long count1 = SystemInfo.getOpenFD();
+		procs.forEach(p -> {
+			
 			try {
 				int pid = getPidFromProcDirectory(p);
 
@@ -170,6 +175,12 @@ public class ListProcesses {
 			}
 
 		});
+		long count2 = SystemInfo.getOpenFD();
+		
+		if (count2 > 10 && (count2 > count0+20 || count2 > SystemInfo.getMaxFD()/2))
+			log.warn(String.format("Open file descriptors: %d -> %d -. %d (max %d)",
+					count0, count1, count2, SystemInfo.getMaxFD()));
+		
 	}
 
 	private static String getStat(Path p) throws IOException {
