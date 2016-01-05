@@ -94,10 +94,8 @@ public abstract class BuildServer implements ConfigurationKeys {
 	private static final String LOG4J_CONSOLE_CONFIG = "edu/umd/cs/buildServer/log4j-console.properties";
 
 	// Status codes from doOneRequest()
-	private static final int NO_WORK = 0;
-	private static final int SUCCESS = 1;
-	private static final int COMPILE_FAILURE = 2;
-	private static final int BUILD_FAILURE = 3;
+	static enum RequestStatus { NO_WORK, SUCCESS, COMPILE_FAILURE, BUILD_FAILURE, ERROR };
+
 
 	/**
 	 * We will sleep at most 2^MAX_SLEEP seconds as the poll interval. We sleep
@@ -300,10 +298,11 @@ public abstract class BuildServer implements ConfigurationKeys {
 			}
 			overloadCount = 0;
 
-			int rc = doOneRequest();
+			RequestStatus rc = doOneRequest();
 			log.trace("Done with request");
 
 			// Run GC, encourage finalizers to run
+			if (rc == RequestStatus.ERROR) return;
 			
 			System.gc();
 			String load = SystemInfo.getSystemLoad();
@@ -314,7 +313,7 @@ public abstract class BuildServer implements ConfigurationKeys {
 			// sleep for a while. This will help avoid
 			// thrashing the build server when nothing useful
 			// can be done.
-			if (rc == NO_WORK || rc == BUILD_FAILURE) {
+			if (rc == RequestStatus.NO_WORK || rc == RequestStatus.BUILD_FAILURE) {
 				sleep();
 			} else {
 				noWorkCount = 0;
@@ -506,17 +505,17 @@ public abstract class BuildServer implements ConfigurationKeys {
      *         COMPILE_ERROR if the project failed to compile, BUILD_ERROR if
      *         the project could not be built due to an internal error
      */
-    private int doOneRequest() throws MissingConfigurationPropertyException {
+    private RequestStatus doOneRequest() throws MissingConfigurationPropertyException {
 
         ProjectSubmission<?> projectSubmission = null;
         try {
             // Get a ProjectSubmission to build and test
             projectSubmission = getProjectSubmission();
             if (projectSubmission == null)
-                return NO_WORK;
+                return RequestStatus.NO_WORK;
 
             long start = System.currentTimeMillis();
-            int result;
+            RequestStatus result;
             try {
             	log.trace("Build configuration");
             	log.trace(getConfig());
@@ -552,14 +551,14 @@ public abstract class BuildServer implements ConfigurationKeys {
                     buildAndTestProject(projectSubmission);
 
                     if (getDownloadOnly()) 
-                    	return NO_WORK;
+                    	return RequestStatus.NO_WORK;
                     // Building and testing was successful.
                     // ProjectSubmission should have had its public, release,
                     // secret and student
                     // TestOutcomes added.
                     addBuildTestResult(projectSubmission, TestOutcome.PASSED,
                             "", started);
-                    result = SUCCESS;
+                    result = RequestStatus.SUCCESS;
                 } catch (BuilderException e) {
                     // treat as compile error
                     getLog().info(
@@ -579,7 +578,7 @@ public abstract class BuildServer implements ConfigurationKeys {
                     
                     buildFailed(projectSubmission, started, compilerOutput);
 
-                    result = COMPILE_FAILURE;
+                    result = RequestStatus.COMPILE_FAILURE;
                 } catch (CompileFailureException e) {
                     // If we couldn't compile, report special testOutcome
                     // stating this fact
@@ -592,7 +591,7 @@ public abstract class BuildServer implements ConfigurationKeys {
                             + e.getCompilerOutput();
                     buildFailed(projectSubmission, started, compilerOutput);
 
-                    result = COMPILE_FAILURE;
+                    result = RequestStatus.COMPILE_FAILURE;
 
                 } catch (Throwable e) {
                     // Got a throwable
@@ -604,7 +603,7 @@ public abstract class BuildServer implements ConfigurationKeys {
                     String compilerOutput = "Building threw unexpected exception: " + toString(e);
                     buildFailed(projectSubmission, started, compilerOutput);
 
-                    result = COMPILE_FAILURE;
+                    result = RequestStatus.ERROR;
                 }
             } finally {
                 // Make sure the zip file is cleaned up.
@@ -632,18 +631,18 @@ public abstract class BuildServer implements ConfigurationKeys {
         } catch (HttpException e) {
             log.error("Internal error: BuildServer got HttpException", e);
             // Assume this wasn't our fault
-            return NO_WORK;
+            return RequestStatus.NO_WORK;
         } catch(java.net.ConnectException e) {
         	 	log.info("Unable to connect to submit server at " +  getBuildServerConfiguration().getSubmitServerURL());
-             return NO_WORK;
+             return RequestStatus.NO_WORK;
         } catch (IOException e) {
             log.error("Internal error: BuildServer got IOException", e);
             // Assume this is an internal error
-            return BUILD_FAILURE;
+            return RequestStatus.BUILD_FAILURE;
         } catch (BuilderException e) {
             log.error("Internal error: BuildServer got BuilderException", e);
             // This is a build failure
-            return BUILD_FAILURE;
+            return RequestStatus.BUILD_FAILURE;
         } finally {
             if (projectSubmission != null) {
                 releaseConnection(projectSubmission);
