@@ -60,6 +60,7 @@ import org.apache.log4j.SimpleLayout;
 import edu.umd.cs.buildServer.builder.BuilderAndTesterFactory;
 import edu.umd.cs.buildServer.util.LoadAverage;
 import edu.umd.cs.buildServer.util.ServletAppender;
+import edu.umd.cs.buildServer.util.jni.ProcessKiller;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.OutcomeType;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.TestType;
@@ -302,7 +303,11 @@ public abstract class BuildServer implements ConfigurationKeys {
 			log.trace("Done with request");
 
 			// Run GC, encourage finalizers to run
-			if (rc == RequestStatus.ERROR) return;
+			if (rc == RequestStatus.ERROR) {
+				ProcessKiller.killProcessGroup(MarmosetUtilities.getPid(), ProcessKiller.Signal.TERMINATION);
+				// we shouldn't reach this point
+				return;
+			}
 			
 			System.gc();
 			String load = SystemInfo.getSystemLoad();

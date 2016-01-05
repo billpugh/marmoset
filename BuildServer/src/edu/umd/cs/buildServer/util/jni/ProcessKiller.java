@@ -8,6 +8,9 @@ public class ProcessKiller {
 		return kill(pid, signal.value);
 	}
 
+	public static  int killProcessGroup(int pid, Signal signal) {
+		return kill(-pid, signal.value);
+	}
 	
 	public enum Signal {
 		HUP("hang up",1),
