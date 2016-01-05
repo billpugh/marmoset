@@ -173,7 +173,7 @@ public class ListProcesses {
 	}
 
 	private static String getLoginUID(Path p) throws IOException {
-		Optional<String> uid = Files.lines(p).filter(s -> s.startsWith("Uid:")).findFirst();
+		Optional<String> uid = Files.lines(p.resolve("status")).filter(s -> s.startsWith("Uid:")).findFirst();
 		if (!uid.isPresent())
 			throw new IOException("Did not find user id");
 		return uid.get().split("\t")[1];
