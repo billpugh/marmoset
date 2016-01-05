@@ -2,11 +2,11 @@ package edu.umd.cs.buildServer.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -205,6 +205,8 @@ public class ListProcesses {
 				}
 				log.info("proc: " + userid + " :: " + contents);
 				callback.process(pid, ppid, pgrp, state, now, filename);
+			}catch (FileNotFoundException e) {
+				// must have died before we could examine it
 			} catch (IOException e) {
 				log.warn("Error examining " + p, e);
 				// must have died before we could examine it
