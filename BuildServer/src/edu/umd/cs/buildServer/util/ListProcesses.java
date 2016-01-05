@@ -191,7 +191,7 @@ public class ListProcesses {
 				
 				String userid = getLoginUID(p);
 				if (!myUserId.equals(userid))
-					return;
+					continue;
 				int pid = getPidFromProcDirectory(p);
 				String contents = getStat(p);
 				String fields[] = contents.split(" ");
