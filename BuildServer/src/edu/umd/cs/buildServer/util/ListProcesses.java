@@ -183,6 +183,7 @@ public class ListProcesses {
 		long count0 = SystemInfo.getOpenFD();
 		// Multiset<String> initiallyOpen = openFiles();
 		 File[] processDirs = new File("/proc").listFiles(ListProcesses::fileIsProcess);
+		 log.info("Got " + processDirs.length + " process directories");
 		 long count1 = SystemInfo.getOpenFD();
 		 for(File p : processDirs) {
 					
@@ -205,6 +206,7 @@ public class ListProcesses {
 				log.info("proc: " + userid + " :: " + contents);
 				callback.process(pid, ppid, pgrp, state, now, filename);
 			} catch (IOException e) {
+				log.warn("Error examining " + p, e);
 				// must have died before we could examine it
 			} catch (Exception e) {
 				log.error("Error examining " + p, e);
