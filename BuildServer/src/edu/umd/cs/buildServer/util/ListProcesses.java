@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
+
 import edu.umd.cs.marmoset.utilities.MarmosetUtilities;
 import edu.umd.cs.marmoset.utilities.SystemInfo;
 
@@ -27,6 +30,23 @@ public class ListProcesses {
 
 	}
 
+	public static String getRealPath(Path p)  {
+		try {
+		return p.toRealPath().toString();
+		} catch (Exception e) {
+			return "Exception " + p.toString();
+		}
+	}
+	public static  Multiset<String> openFiles() throws IOException {
+		Multiset<String> result =  TreeMultiset.create();
+		int myPid = MarmosetUtilities.getPid();
+		Path fd = Paths.get("/proc" + myPid + "/fd");
+		
+		Files.list(fd).map(ListProcesses::getRealPath).forEach(s -> result.add(s));
+		
+		return result;
+		
+	}
 	public static void main(String args[]) throws Exception {
 		Logger log = Logger.getRootLogger();
 		log.setLevel(Level.ALL);
@@ -145,6 +165,7 @@ public class ListProcesses {
 		Date now = new Date();
 		callback.started();
 		long count0 = SystemInfo.getOpenFD();
+		 Multiset<String> initiallyOpen = openFiles();
 		List<Path> procs = Files.list(proc).filter(ListProcesses::isProcess).collect(Collectors.toList());
 		long count1 = SystemInfo.getOpenFD();
 		procs.forEach(p -> {
@@ -176,10 +197,16 @@ public class ListProcesses {
 
 		});
 		long count2 = SystemInfo.getOpenFD();
-		
-		if (count2 > 10 && (count2 > count0+20 || count2 > SystemInfo.getMaxFD()/2))
+		 Multiset<String> openAtEnd = openFiles();
+			
+		if (count2 > 10 && (count2 > count0 || count2 > SystemInfo.getMaxFD()/2)) {
 			log.warn(String.format("Open file descriptors: %d -> %d -. %d (max %d)",
 					count0, count1, count2, SystemInfo.getMaxFD()));
+			openAtEnd.removeAll(initiallyOpen);
+			log.warn(openAtEnd.size() + " additional file descriptors");
+			openAtEnd.entrySet().forEach(log::warn);
+		}
+		
 		
 	}
 
