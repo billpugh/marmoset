@@ -159,11 +159,14 @@
   </target>
 
   <target name="buildserver.zip">
-    <!-- <ant dir="../BuildServer" target="dist"/> -->
+    <ant dir="../BuildServer" target="dist" inheritAll="false" useNativeBasedir="true"/> 
+  </target>
+  <target name="submit.jar">
+    <ant dir="../CommandLineSubmission" target="dist" inheritAll="false" useNativeBasedir="true"/>
   </target>
 
   <!-- Create a war file-->
-  <target name="war" depends="compile,copyProperties,gwtc,buildserver.zip">
+  <target name="war" depends="compile,copyProperties,gwtc,buildserver.zip,submit.jar">
     <property name="warfile" value="submitServer.war"/>
     <copy todir="${bin}" overwrite="true">
       <fileset dir="${src}">
@@ -319,6 +322,7 @@
     <mkdir dir="WebRoot/codereview"/>
     <delete file="bugs.xml"/>
     <delete file="WebRoot/resources/buildserver.zip"/>
+    <delete file="WebRoot/resources/submit.jar"/>
     <delete file="WebRoot/WEB-INF/lib/gwt-servlet.jar"/>
     <delete file="WebRoot/WEB-INF/lib/modelClasses.jar"/>
     <echo message="Clean"/>

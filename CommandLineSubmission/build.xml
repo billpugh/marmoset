@@ -38,6 +38,12 @@
 		<delete>
 			<fileset dir="bin" includes="**/*.class"/>
 		</delete>
+ 		<mkdir dir="bin"/>
 	</target>
+
+ 	<target name="dist" depends="clean,jarFile">
+ 	<copy file="submit.jar" todir="../SubmitServer2/WebRoot/resources"/>
+	</target>
+       
 	
 </project>

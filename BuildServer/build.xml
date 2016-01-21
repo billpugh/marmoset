@@ -76,7 +76,7 @@
 			antfile="${modelClasses}/build.xml"
 			inheritall="false"
 			>
-			<property name="output.dir" value="${user.dir}/lib"/>
+			<property name="output.dir" value="../BuildServer/lib"/>
 		</ant>
 	</target>
 

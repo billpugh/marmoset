@@ -40,6 +40,8 @@
 	</target>
 
 	<target name="jar" depends="classes">
+		<echo message="Building ${output.dir}/${jarfile}"/>
+
 		<jar destfile="${output.dir}/${jarfile}">
 			<fileset dir="bin">
 				<include name="**/*.class"/>
