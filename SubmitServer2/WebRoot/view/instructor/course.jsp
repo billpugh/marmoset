@@ -441,58 +441,64 @@ jQuery(document).ready(function ($) {
                             <c:param name="courseKey" value="${course.courseKey}" />
                         </c:url>
     <ul>
-    <li><a href="${courseCalendarLink}">Course calendar link</a> (iCalendar .ics format: 
-    subscribe in iCal, Google calendar, or Outlook)
+		<li><a href="${courseCalendarLink}">Course calendar link</a>
+			(iCalendar .ics format: subscribe in iCal, Google calendar, or
+			Outlook)</li>
+		<li>Server load: ${systemLoad}</li>
+		
+		<c:url var="createBuildserverConfig"
+			value="/action/instructor/CreateBuildserverConfigFile">
+			<c:param name="buildserverCourse">${course.coursePK}</c:param>
+		</c:url>
+		<li><a href="${createBuildserverConfig}">Generate buildserver
+				config file to run your own buildserver</a></li>
+				
+		<c:url var="zippedBuildServer" value="/resources/buildserver.zip" />
+		<li><a href="${zippedBuildServer}">Zip archive of build
+				server</a></li>
+				
+		<c:url var="commandLineSubmitTool" value="/resources/submit.jar" />
+		<li><a href="${commandLineSubmitTool}">Executable jar file
+				for submission from command line</a></li>
+		<c:choose>
+				<c:when test="${empty buildServers}">
+					<li><c:if test="${testedProjects}">
+							<b>WARNING</b>
+						</c:if> There are no recent build servers for your course.
+				</c:when>
+				<c:otherwise>
+					<li>There are ${fn:length(buildServers)} recent build servers
+						that can build code for your course. (<a
+						href="javascript:toggle('buildServers')">details</a>)
 
-    <li>Server load: ${systemLoad}
-    
-    <c:url var="createBuildserverConfig" value="/action/instructor/CreateBuildserverConfigFile">
-                    <c:param name="buildserverCourse">${course.coursePK}</c:param>
-                </c:url>
-    <c:url var="zippedBuildServer" value="/resources/buildserver.zip"/>
-                                  <li><a href="${createBuildserverConfig}">Generate buildserver config file to run your own
-                        buildserver</a>
-                <li><a href="${zippedBuildServer}">Zip archive of build server</a>
-  <c:choose>
-        <c:when test="${empty buildServers}">
-            <li>
-                <c:if test="${testedProjects}">
-                    <b>WARNING</b>
-                </c:if>
-                There are no recent build servers for your course.
-           
-               
-        </c:when>
-        <c:otherwise>
-            <li>
-                There are ${fn:length(buildServers)} recent build servers that can build code for your course. (<a
-                    href="javascript:toggle('buildServers')">details</a>)
-                
-            <div id="buildServers" style="display: none">
-                <p>
-                <table>
-                    <tr>
-                        <th>Host
-                        <th>Last request
-                        <th>Last success
-                        <th>Load</th>
-                    </tr>
+						<div id="buildServers" style="display: none">
+							<p>
+							<table>
+								<tr>
+									<th>Host
+									<th>Last request
+									<th>Last success
+									<th>Load</th>
+								</tr>
 
-                    <c:forEach var="buildServer" items="${buildServers}" varStatus="counter">
-                        <tr class="r${counter.index % 2}">
-                            <td><c:out value="${buildServer.name}" />
-                            <td><fmt:formatDate value="${buildServer.lastRequest}" pattern="dd MMM, hh:mm a" /></td>
-                            <td><fmt:formatDate value="${buildServer.lastSuccess}" pattern="dd MMM, hh:mm a" /></td>
-                            <td><c:out value="${buildServer.load}" /></td>
-                        </tr>
-                    </c:forEach>
-                </table>
+								<c:forEach var="buildServer" items="${buildServers}"
+									varStatus="counter">
+									<tr class="r${counter.index % 2}">
+										<td><c:out value="${buildServer.name}" />
+										<td><fmt:formatDate value="${buildServer.lastRequest}"
+												pattern="dd MMM, hh:mm a" /></td>
+										<td><fmt:formatDate value="${buildServer.lastSuccess}"
+												pattern="dd MMM, hh:mm a" /></td>
+										<td><c:out value="${buildServer.load}" /></td>
+									</tr>
+								</c:forEach>
+							</table>
 
-               
-            </div>
-        </c:otherwise>
-    </c:choose>
-    </ul>
+
+						</div>
+				</c:otherwise>
+			</c:choose>
+	</ul>
 
     <c:if test="${instructorActionCapability}">
         <h2>
