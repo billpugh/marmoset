@@ -253,8 +253,17 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 
     @Override
 	protected void doWelcome() throws MissingConfigurationPropertyException, IOException {
-        if (!isQuiet()) 
-            System.out.println("Connecting to submit server");
+        if (!isQuiet()) {
+            System.out.println("Connecting to submit server at " 
+            		+ getBuildServerConfiguration().getSubmitServerURL());
+            String hostname = getBuildServerConfiguration().getHostname();
+            System.out.println("Hostname: " + hostname);
+            System.out.println("System load: " + SystemInfo.getSystemLoad());
+            System.out.println("Java version: " +  System.getProperty("java.version"));
+            System.out.println("connection timeout: " + getConnectionTimeout());
+      	    System.out.println();
+            
+        }
         String url = getWelcomeURL();
         MultipartPostMethod method = new MultipartPostMethod(url);
 
@@ -763,6 +772,10 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
                 .withLongOpt("logLevel")
                 .create( "l");
         Option help = new Option( "h", "help",false, "print this message" );
+        Option verifyOnly = OptionBuilder
+                .withDescription(  "just verify connection to submit server" )
+                .withLongOpt("verify")
+                .create( "v"); 
         options.addOption(help);
         options.addOption(configFile);
         options.addOption(submission);
@@ -776,6 +789,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
         options.addOption(logLevel);
         options.addOption(quiet);
         options.addOption(downloadOnly);
+        options.addOption(verifyOnly);
         return options;
 	}
 	
@@ -838,7 +852,9 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
         
         if (line.hasOption("quiet"))
             buildServer.setQuiet(true);
-        
+        if (line.hasOption("verify"))
+            buildServer.setVerifyOnly();
+       
         if (line.hasOption("course")) {
             buildServer.getConfig().setProperty(DEBUG_SPECIFIC_COURSE,
                     line.getOptionValue("course"));

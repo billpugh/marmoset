@@ -290,6 +290,12 @@ public abstract class BuildServer implements ConfigurationKeys {
 				"Executing server loop; can build " + supportedCourseList);
 		
 		doWelcome();
+		
+		if (isVerifyOnly()) {
+			System.out.println("verification only, terminating");
+			return;
+		}
+			
 		int overloadCount = 0;
 		while (continueServerLoop()) {
 
@@ -1003,6 +1009,10 @@ public abstract class BuildServer implements ConfigurationKeys {
 		boolean result = config.getDebugProperty(DOWNLOAD_ONLY);
 		return result;
 	}
+	public boolean isVerifyOnly() {
+		boolean result = config.getDebugProperty(VERIFY_ONLY);
+		return result;
+	}
 	public boolean isQuiet() {
         return config.getOptionalBooleanProperty(SERVER_QUIET);
     }
@@ -1014,6 +1024,10 @@ public abstract class BuildServer implements ConfigurationKeys {
 		config.setProperty(DOWNLOAD_ONLY, Boolean.toString(downloadOnly));
 	}
 
+	public void setVerifyOnly() {
+		config.setProperty(VERIFY_ONLY, Boolean.toString(true));
+	}
+	
 	public void markPid() throws Exception {
 		File pidFile = getPidFile();
 		PrintWriter out = new PrintWriter(new FileWriter(pidFile));

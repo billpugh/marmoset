@@ -168,6 +168,7 @@ public interface ConfigurationKeys {
 	public static final String DEBUG_DO_NOT_LOOP = DEBUG_PFX + "donotloop";
 	
 	public static final String DOWNLOAD_ONLY = DEBUG_PFX + "downloadOnly";
+	public static final String VERIFY_ONLY = DEBUG_PFX + "verifyOnly";
 
 	/** Debug property: don't loop, build specific submission */
 	public static final String DEBUG_SPECIFIC_SUBMISSION = DEBUG_PFX
