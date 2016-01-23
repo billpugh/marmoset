@@ -35,10 +35,10 @@
 		Delete generated files.
 	-->
 	<target name="clean">
+ 		<mkdir dir="bin"/>
 		<delete>
 			<fileset dir="bin" includes="**/*.class"/>
 		</delete>
- 		<mkdir dir="bin"/>
 	</target>
 
  	<target name="dist" depends="clean,jarFile">
