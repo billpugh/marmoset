@@ -1,5 +1,9 @@
 package edu.umd.cs.marmoset.modelClasses;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,6 +48,26 @@ public class StudentPicture {
 		image = blob.getBytes(1, (int) length);
 	}
 
+	
+	public static void insertOrUpdate(Connection conn, Student student,
+			String url) throws SQLException, MalformedURLException, IOException {
+		if (Student.FAKE_NAMES)
+			return;
+		if (url == null || url.isEmpty()) return;
+
+		URLConnection urlConnection = new URL(url).openConnection();
+		String type = urlConnection.getContentType();
+		
+		String query = Queries.makeInsertOrUpdateStatement(ATTRIBUTE_NAME_LIST,
+				TABLE_NAME);
+		
+		try  (PreparedStatement stmt = conn.prepareStatement(query)) {
+			Queries.setInsertOrUpdateStatement(stmt, student.getStudentPK(), type);
+			stmt.setBlob(3, urlConnection.getInputStream());
+			stmt.executeUpdate();
+		};
+	}
+	
 	public static void insertOrUpdate(Connection conn, Student student,
 			String type, Blob blob) throws SQLException {
 		if (Student.FAKE_NAMES)
