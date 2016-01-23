@@ -75,8 +75,7 @@ public class SubmitStatusFilter extends SubmitServerFilter {
         }
         String code = studentRegistration.getClassAccount()+";" + submitStatus.getOneTimePassword();
         int hash = code.hashCode() & 0xf;
-        if (hash < 0)
-            throw new IllegalStateException();
+
         String checkSum = Integer.toHexString(hash);
         if (checkSum.length() != 1)
             throw new IllegalStateException();
