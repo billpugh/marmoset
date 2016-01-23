@@ -113,6 +113,8 @@ public class StudentAccountForInstructor extends SubmitServerServlet {
       Course course, StudentRegistration instructor, Student student) throws SQLException {
     if (!instructor.isInstructor())
       throw new IllegalArgumentException();
+    if (!student.isPseudoAccount())
+      throw new IllegalArgumentException();
     
     StudentRegistration registration = StudentRegistration.lookupByStudentPKAndCoursePK(student.getStudentPK(),
         course.getCoursePK(), conn);
@@ -134,13 +136,15 @@ public class StudentAccountForInstructor extends SubmitServerServlet {
   }
 
   private static Student createOrFindPseudoStudent(Connection conn, Student student) throws SQLException {
-    if (student.isPseudoAccount() || student.isSuperUser() || student.isTeamAccount())
+    if (!student.isNormalAccount())
       throw new IllegalArgumentException();
-    Student pseudoStudent = new Student();
+    Student pseudoStudent = student.lookupPseudoAccount(conn);
+    if (pseudoStudent != null) return pseudoStudent;
+    pseudoStudent = new Student();
     pseudoStudent.setLastname(student.getLastname());
     pseudoStudent.setFirstname(student.getFirstname());
     pseudoStudent.setCampusUID(student.getCampusUID());
-    pseudoStudent.setLoginName(student.getLoginName() + "-student");
+    pseudoStudent.setLoginName(student.getLoginNameForPseudoAccount());
     pseudoStudent.setAccountType(Student.PSEUDO_ACCOUNT);
     pseudoStudent = pseudoStudent.insertOrUpdateCheckingLoginNameAndCampusUID(conn);
     return pseudoStudent;
@@ -148,10 +152,8 @@ public class StudentAccountForInstructor extends SubmitServerServlet {
 
   private static @CheckForNull
   Student findPseudoStudent(Connection conn, Student student) throws SQLException {
-    if (student.isPseudoAccount() || student.isSuperUser() || student.isTeamAccount())
-      return null;
-    return Student.lookupByLoginNameAndCampusUID(student.getLoginName() + "-student", student.getCampusUID(), conn);
-
+    if (!student.isNormalAccount()) return null;
+    return student.lookupPseudoAccount(conn);
   }
 
 }

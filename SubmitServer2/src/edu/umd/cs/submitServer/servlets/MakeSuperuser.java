@@ -44,17 +44,25 @@ public class MakeSuperuser extends SubmitServerServlet {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Not superuser");
             return;
         }
-        if (!student.isSuperUser()) {
-            Connection conn = null;
-            try {
-                conn = getConnection();
-                InitializeDatabase.getOrCreateSuperuserFor(student, conn);
-            } catch (SQLException e) {
-                throw new ServletException(e);
-            } finally {
-                releaseConnection(conn);
-            }
+        if (!student.isNormalAccount()) {
+          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "student not normal account");
+          return;
         }
+        if (!student.getCanImportCourses()) {
+          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "student not instructor account");
+          return;
+        }
+
+        Connection conn = null;
+        try {
+          conn = getConnection();
+          student.lookupOrCreateAdminAccount(conn);
+        } catch (SQLException e) {
+          throw new ServletException(e);
+        } finally {
+          releaseConnection(conn);
+        }
+
         String redirectUrl = request.getContextPath() + "/view/admin/";
         response.sendRedirect(redirectUrl);
     }

@@ -101,7 +101,6 @@ public class GenericLDAPAuthenticationService implements ILDAPAuthenticationServ
             env.put(Context.PROVIDER_URL, ldapURL);
             env.put(Context.SECURITY_AUTHENTICATION, authMechanism);
 
-            campusUID = Student.stripSuffixForLdap(campusUID);
             LdapName principalDn;
             try {
                 principalDn = new LdapName(String.format(principleFormat, Rdn.escapeValue(campusUID)));

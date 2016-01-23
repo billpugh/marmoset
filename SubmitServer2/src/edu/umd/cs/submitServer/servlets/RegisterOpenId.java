@@ -46,7 +46,7 @@ public class RegisterOpenId extends SubmitServerServlet {
 			    Student student = makeStudent(uid, firstname, lastname, loginName, email);
 	            student.setCanImportCourses(true);
 	            student.insert(conn);
-				Student admin = makeStudent(uid, firstname, lastname, loginName + "-admin", email);
+				Student admin = makeStudent(uid, firstname, lastname, student.getLoginNameForAdminAccount(), email);
 				admin.setSuperUser(true);
 				admin.insert(conn);
 				PerformLogin.setUserSession(req.getSession(), admin, conn);

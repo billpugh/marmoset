@@ -110,7 +110,7 @@ public class InitializeDatabase extends GradeServerInterfaceServlet {
       s.setCanImportCourses(true);
 			s = s.insertOrUpdateCheckingLoginNameAndCampusUID(conn);
 
-			Student superuser = getOrCreateSuperuserFor(s, conn);
+			Student superuser = s.lookupOrCreateAdminAccount(conn);
 
 			// Sets required information in the user's session.
 			PerformLogin.setUserSession(session, superuser, conn);
@@ -126,15 +126,6 @@ public class InitializeDatabase extends GradeServerInterfaceServlet {
 	}
 
 
-    public static Student getOrCreateSuperuserFor(Student s, Connection conn) throws SQLException {
-        Student superuser = new Student();
-        superuser.setLastname(s.getLastname());
-        superuser.setFirstname(s.getFirstname());
-        superuser.setCampusUID(s.getCampusUID());
-        superuser.setLoginName(s.getLoginName()+ "-admin");
-        superuser.setSuperUser(true);
-        superuser = superuser.insertOrUpdateCheckingLoginNameAndCampusUID(conn);
-        return superuser;
-    }
+    
 
 }

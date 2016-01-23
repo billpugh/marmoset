@@ -95,7 +95,7 @@ public class PerformLogin extends SubmitServerServlet {
     session = request.getSession(true);
 		String keepMeLoggedIn = parser.getOptionalPasswordParameter("keepMeLoggedIn");
 		
-		if ("checked".equals(keepMeLoggedIn) && !campusUID.endsWith("-admin"))
+		if ("checked".equals(keepMeLoggedIn) && !superUserLogin)
 			session.setMaxInactiveInterval((int)TimeUnit.SECONDS.convert(14, TimeUnit.DAYS)); 
 		Connection conn = null;
 		try {
@@ -109,6 +109,7 @@ public class PerformLogin extends SubmitServerServlet {
 			// [end NAT P001]
 
 			if (superUserLogin) {
+			  session.setMaxInactiveInterval((int)TimeUnit.SECONDS.convert(20, TimeUnit.MINUTES)); 
 				getAuthenticationLog().info(
 						"studentPK " + superUserStudentPK
 								+ " just authenticated as "
@@ -128,7 +129,7 @@ public class PerformLogin extends SubmitServerServlet {
 			}
 
 			// otherwise redirect to the main view page
-			response.sendRedirect("/view/index.jsp");
+			response.sendRedirect(request.getContextPath() + "/view/index.jsp");
 		} catch (SQLException e) {
 			handleSQLException(e);
 			throw new ServletException(e);
@@ -184,13 +185,13 @@ public class PerformLogin extends SubmitServerServlet {
 		// a form
 		userSession.setGivenConsent(student.getGivenConsent());
 		
-		if (!student.getLoginName().endsWith("-admin") && !student.getLoginName().endsWith("-student")) {
-			Student superuser = Student.lookupByLoginName(student.getLoginName() + "-admin", conn);
+		if (student.getCanImportCourses() && student.isNormalAccount()) {
+			Student superuser = student.lookupAdminAccount(conn);
 			if (superuser != null) {
 				userSession.setSuperuserPK(superuser.getStudentPK());
 			}
 
-			Student shadow = Student.lookupByLoginName(student.getLoginName() + "-student", conn);
+			Student shadow = student.lookupPseudoAccount(conn);
 			if (shadow != null) {
 				userSession.setShadowAccountPK(shadow.getStudentPK());
 			}
