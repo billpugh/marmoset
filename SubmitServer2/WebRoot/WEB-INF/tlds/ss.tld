@@ -23,6 +23,19 @@
       <required>false</required>
     </attribute>
   </tag>
+    <tag>
+    <name>webProperty</name>
+    <tag-class>edu.umd.cs.submitServer.tags.WebPropertyTag</tag-class>
+    <body-content>empty</body-content>
+    <attribute>
+      <name>key</name>
+      <required>true</required>
+    </attribute>
+    <attribute>
+      <name>safeHtml</name>
+      <required>false</required>
+    </attribute>
+  </tag>
 
 <tag-file>
     <name>submitProject</name>
