@@ -34,7 +34,9 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.meta.TypeQualifier;
 
@@ -83,11 +85,22 @@ public class Student  implements Comparable<Student> {
   private boolean canImportCourses;
 
 
-  public static final @Deprecated  String DEMO_ACCOUNT = "demo";
-  public static final String NORMAL_ACCOUNT = "normal";
-  public static final String PSEUDO_ACCOUNT = "pseudo";
+  @Documented
+	@TypeQualifier(applicableTo = String.class)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface Kind {}
+
+	public static @Kind String asKind(String kind) {
+		return kind;
+	}
+	
+	
+  public static final @Kind String NORMAL_ACCOUNT = "normal";
+  public static final @Kind String PSEUDO_ACCOUNT = "pseudo";
+  public static final @Kind String ADMIN_ACCOUNT = "admin";
+  
   // [NAT]
-  public static final @Deprecated String TEAM_ACCOUNT = "team";
+  public static final @Deprecated @Kind String TEAM_ACCOUNT = "team";
 
   public static final String TABLE_NAME="students";
 
@@ -103,10 +116,10 @@ public class Student  implements Comparable<Student> {
       "can_import_courses"
    };
 
-   public static final String ADMIN_SUFFIX = "-admin";
-   public static final String STUDENT_SUFFIX = "-student";
+   private static final String ADMIN_SUFFIX = "admin";
+   private static final String STUDENT_SUFFIX = "student";
 
-  public static String stripSuffixForLdap(String loginName) {
+  private static String stripSuffixForLdap(String loginName) {
 
     if (loginName.endsWith(ADMIN_SUFFIX))
       loginName = loginName.substring(0, loginName.length()
@@ -117,22 +130,6 @@ public class Student  implements Comparable<Student> {
     return loginName;
   }
   
-  public  String getLoginSuffix() {
-      if (loginName.endsWith(ADMIN_SUFFIX))
-          return ADMIN_SUFFIX;
-      if (loginName.endsWith(STUDENT_SUFFIX))
-          return STUDENT_SUFFIX;
-      return "";
-    }
-
-  public boolean hasLoginSuffix() {
-
-    if (loginName.endsWith(ADMIN_SUFFIX))
-      return true;
-    if (loginName.endsWith(STUDENT_SUFFIX))
-      return true;
-    return false;
-  }
   /**
    * Fully-qualified attributes for students table.
    */
@@ -178,6 +175,8 @@ public class Student  implements Comparable<Student> {
 
     public void setSuperUser(boolean superUser) {
         this.superUser = superUser;
+        if (superUser) 
+        	this.accountType = ADMIN_ACCOUNT;
     }
   /**
    * @return Returns the loginName.
@@ -185,17 +184,43 @@ public class Student  implements Comparable<Student> {
   public String getLoginName() {
     return loginName;
   }
+  
+  public String getLoginNameForAdminAccount() {
+	  return getLoginNameForSuffix(ADMIN_SUFFIX);
+  }
+  
+  public String getLoginNameForPseudoAccount() {
+	  return getLoginNameForSuffix(STUDENT_SUFFIX);
+  }
+  
+  private String getLoginNameForSuffix(String suffix) {
+	  if (!accountType.equals(NORMAL_ACCOUNT) )
+		  throw new RuntimeException("Can't get " + suffix + " account for a " + accountType + " account");
+	  if (!canImportCourses) 
+		  throw new RuntimeException("Can't get " + suffix + " account for an account that can't create courses");
+	  if (superUser) 
+		  throw new RuntimeException("Can't get " + suffix + " account for an admin account");
+	  int at = loginName.indexOf('@');
+	  if (at < 0)
+		  return loginName + "-" + suffix;
+	  
+      String p = loginName.substring(0, at);
+      String s = loginName.substring(at);
+      return p + "+" + suffix + s;
+  }
+  
+  
   /**
    * @param campusUID The loginName to set.
    */
   public boolean setLoginName(String loginName) {
     if (loginName.equals(this.loginName))
         return false;
-    if (this.loginName != null && hasLoginSuffix()) {
-        loginName = loginName + getLoginSuffix();
-        if (loginName.equals(this.loginName))
-            return false;
-    }
+    if (isSuperUser())
+    	throw new IllegalStateException("Can't change name of superuser");
+    if (isPseudoAccount())
+    	throw new IllegalStateException("Can't change name of pseudo account");
+
     this.loginName = loginName;
     return true;
   }
@@ -303,6 +328,10 @@ public class Student  implements Comparable<Student> {
     
     public boolean isPseudoAccount() {
         return PSEUDO_ACCOUNT.equals(getAccountType());
+    }
+    
+    public boolean isNormalAccount() {
+    	return NORMAL_ACCOUNT.equals(getAccountType()) && !isPseudoAccount() && !isSuperUser();
     }
 
      public String getEmail() {
@@ -719,18 +748,25 @@ public class Student  implements Comparable<Student> {
     public static Student lookupByCampusUID(String campusUID, Connection conn)
     throws SQLException
     {
-        String query =
-            " SELECT " +ATTRIBUTES+
-            " FROM " +TABLE_NAME+
-            " WHERE campus_UID = ? " +
-            " AND superuser = ? ";
-
-
-        PreparedStatement stmt = conn.prepareStatement(query);
-        stmt.setString(1, campusUID);
-        stmt.setBoolean(2, false);
-        return getFromPreparedStatement(stmt);
+        return lookupByCampusUID(campusUID, NORMAL_ACCOUNT, conn);
     }
+    public static Student lookupByCampusUID(String campusUID, @Kind String accountKind, Connection conn)
+    	    throws SQLException
+    	    {
+    	        String query =
+    	            " SELECT " +ATTRIBUTES+
+    	            " FROM " +TABLE_NAME+
+    	            " WHERE campus_UID = ? " +
+    	            " AND superuser = ? " +
+    	            " AND account_type = ? ";
+
+
+    	        PreparedStatement stmt = conn.prepareStatement(query);
+    	        stmt.setString(1, campusUID);
+    	        stmt.setBoolean(2, accountKind.equals(ADMIN_ACCOUNT));
+    	        stmt.setString(3, accountKind);
+    	        return getFromPreparedStatement(stmt);
+    	    }
 
     /**
      * Looks up a student record based on the student's campusUID (these are unique IDs
@@ -892,5 +928,39 @@ public class Student  implements Comparable<Student> {
         }
         
     }
+    
+    public @CheckForNull Student lookupAdminAccount (Connection conn) throws SQLException {
+    	if (!isNormalAccount() || !getCanImportCourses() ) throw new RuntimeException();
+    	Student s = Student.lookupByCampusUID(campusUID, ADMIN_ACCOUNT, conn);
+    	if (s == null) return null;
+    	if (!s.isSuperUser()) 
+    		throw new RuntimeException();
+    	return s;
+    }
+    
+    public  @Nonnull Student lookupOrCreateAdminAccount(Connection conn) throws SQLException {
+        Student superuser = lookupAdminAccount(conn);
+        if (superuser != null) return superuser;
+        superuser = new Student();
+        superuser.setLastname(getLastname());
+        superuser.setFirstname(getFirstname());
+        superuser.setCampusUID(getCampusUID());
+        superuser.setLoginName(getLoginNameForAdminAccount());
+        superuser.setEmail(getEmail());
+        superuser.setSuperUser(true);
+        
+        superuser.insert(conn);
+        return superuser;
+    }
+    
+    public @CheckForNull Student lookupPseudoAccount (Connection conn) throws SQLException {
+    	if (!getCanImportCourses()) throw new RuntimeException();
+    	Student s = Student.lookupByCampusUID(campusUID, PSEUDO_ACCOUNT, conn);
+    	if (s == null) return null;
+    	if (!s.isPseudoAccount()) 
+    		throw new RuntimeException();
+    	return s;
+    }
+    
 
 }
