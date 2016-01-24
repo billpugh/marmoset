@@ -103,7 +103,7 @@ public class GoogleSignin extends SubmitServerServlet {
         }
         
         if (emptyDatabase) {
-          student =  student.lookupAdminAccount(conn);
+          student =  student.lookupOrCreateAdminAccount(conn);
         }
       }
       PerformLogin.setUserSession(request.getSession(), student, conn);
