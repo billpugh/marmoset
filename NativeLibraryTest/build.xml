@@ -1,0 +1,13 @@
+<project name="NativeLibraryTest" default="compile" basedir=".">
+
+	<target name="compile" description="compile the java source files">
+		<mkdir dir="bin" />
+		<javac destdir="bin" srcdir="src" includeantruntime="false"
+			deprecation="off" debug="on" />
+	</target>
+	
+    <target name="clean" description="Delete all generated files">
+            <delete dir="bin" />
+            <mkdir dir="bin" />
+    </target>
+</project>
