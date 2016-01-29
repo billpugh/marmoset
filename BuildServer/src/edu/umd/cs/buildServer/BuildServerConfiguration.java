@@ -39,6 +39,8 @@ import java.util.StringTokenizer;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import org.apache.log4j.Logger;
+
 /**
  * BuildServerConfiguration Contains all information passed to the BuildServer
  * through the config.properties file. Ultimately this class should be created
@@ -132,7 +134,7 @@ public class BuildServerConfiguration implements BuildServerConfigurationMBean {
         return new File(root);
     }
 
-	public String getLocalHostName(Configuration config) {
+	public String getLocalHostName(Configuration config, Logger logger) {
 	    String name = config.getOptionalProperty(ConfigurationKeys.HOSTNAME);
 	    if (name != null)
 	        return name;
@@ -147,12 +149,13 @@ public class BuildServerConfiguration implements BuildServerConfigurationMBean {
             return localHost.getHostName()
                     + username;
         } catch (Exception e) {
+        	logger.warn("Unable to get local host name", e);
             return "unknown";
         }
         
 	    
 	}
-	public void loadAllProperties(Configuration config)
+	public void loadAllProperties(Configuration config, Logger logger)
 			throws MissingConfigurationPropertyException {
 		setJavaHome(config.getStringProperty("java.home", ""));
 		setBuildServerWorkingDir(config.getStringProperty(BUILD_SERVER_HOME, START_DIRECTORY));
@@ -167,7 +170,7 @@ public class BuildServerConfiguration implements BuildServerConfigurationMBean {
 		setSubmitServerURL(config
 				.getRequiredProperty(ConfigurationKeys.SUBMIT_SERVER_URL));
 		  
-		setHostname(getLocalHostName(config));
+		setHostname(getLocalHostName(config, logger));
 		
 		serverDate = getBuildServerJarfile().lastModified();
 		

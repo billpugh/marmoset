@@ -223,7 +223,7 @@ public abstract class BuildServer implements ConfigurationKeys {
 		buildServerConfiguration = new BuildServerConfiguration();
 		// Try to configure a BuildServerConfiguration object
 		try {
-			buildServerConfiguration.loadAllProperties(getConfig());
+			buildServerConfiguration.loadAllProperties(getConfig(), getLog());
 			// Get MBeanServer
 			MBeanServer platformMBeanserver = ManagementFactory
 					.getPlatformMBeanServer();
