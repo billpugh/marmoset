@@ -180,7 +180,7 @@ public class PerformLogin extends SubmitServerServlet {
 		// set studentPK and superUser
 		userSession.setStudentPK(student.getStudentPK());
 		userSession.setSuperUser(student.isSuperUser());
-		// has this user returned a conset form?
+		// has this user returned a consent form?
 		// we don't care if they've consented or not, just that they've returned
 		// a form
 		userSession.setGivenConsent(student.getGivenConsent());
