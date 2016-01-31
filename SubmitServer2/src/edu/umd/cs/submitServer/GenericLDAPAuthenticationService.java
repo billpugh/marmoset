@@ -86,17 +86,18 @@ public class GenericLDAPAuthenticationService implements ILDAPAuthenticationServ
             String msg = "Cannot find directoryID: " + campusUID;
             throw new CanNotFindDirectoryIDException(HttpServletResponse.SC_UNAUTHORIZED, msg);
         }
+        campusUID = Student.stripSuffixForLdap(campusUID);
+        
         // Use campus uid instead of employee number
         if (skipLDAP || authenticateViaLDAP(campusUID, uidPassword)) {
             return student;
         }
-        String msg = "Password incorrect for directoryID: " + campusUID + ", campus UID: " + campusUID;
+        String msg = "Password incorrect for directoryID: " + campusUID;
         throw new BadPasswordException(HttpServletResponse.SC_UNAUTHORIZED, msg);
     }
 
     private boolean authenticateViaLDAP(String campusUID, String password) throws NamingException {
         try {
-            campusUID = Student.stripSuffixForLdap(campusUID);
             Hashtable<String, String> env = new Hashtable<String, String>(11);
             env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
             env.put(Context.PROVIDER_URL, ldapURL);
@@ -117,6 +118,7 @@ public class GenericLDAPAuthenticationService implements ILDAPAuthenticationServ
             DirContext ctx = new InitialDirContext(env);
             ctx.close();
         } catch (AuthenticationException e) {
+             
             return false;
         } catch (NamingException e) {
             if (e.getMessage().indexOf("Operations Error") != -1 || e.getExplanation().indexOf("Operations Error") != -1) {
