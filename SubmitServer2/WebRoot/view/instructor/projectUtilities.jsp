@@ -93,8 +93,8 @@ jQuery(document).ready(function ($) {
 				enctype="multipart/form-data" method="POST"><input
 				type="hidden" name="projectPK" value="${project.projectPK}">
 		No test setups for this project. <input type="hidden" name="comment" value=""/>
-		<a title="zip/jar file to upload"><input type="file" name="file"
-				size=40></a> <input type="submit" value="Upload"></form>
+		<input type="submit" value="Upload"><a title="zip/jar file to upload"><input type="file" name="file"
+				size=40></a> </form>
 
 </c:if>
 
