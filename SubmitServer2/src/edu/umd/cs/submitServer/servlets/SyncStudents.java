@@ -59,10 +59,12 @@ public class SyncStudents extends GradeServerInterfaceServlet {
 			    int counter = 0;
 				Map<Integer, Student> allStudents = Student.lookupAll(conn);
 				for (Student student : allStudents.values()) {
-					syncStudent(writer, student, gradesConn, conn);
-					counter++;
-					if (counter % 40 == 0)
-					    writer.flush();
+				  if (student.isNormalAccount()) {
+				    syncStudent(writer, student, gradesConn, conn);
+				    counter++;
+				    if (counter % 40 == 0)
+				      writer.flush();
+				    }
 				}
 			}
 			writer.flush();
