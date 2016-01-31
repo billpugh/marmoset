@@ -123,10 +123,10 @@ public class Student  implements Comparable<Student> {
 
     if (loginName.endsWith(ADMIN_SUFFIX))
       loginName = loginName.substring(0, loginName.length()
-          - ADMIN_SUFFIX.length());
+          - ADMIN_SUFFIX.length()-1);
     if (loginName.endsWith(STUDENT_SUFFIX))
       loginName = loginName.substring(0, loginName.length()
-          - STUDENT_SUFFIX.length());
+          - STUDENT_SUFFIX.length()-1);
     return loginName;
   }
   
