@@ -90,7 +90,7 @@ public class GenericLDAPAuthenticationService implements ILDAPAuthenticationServ
         if (skipLDAP || authenticateViaLDAP(campusUID, uidPassword)) {
             return student;
         }
-        String msg = "Password incorrect for directoryID: " + campusUID;
+        String msg = "Password incorrect for directoryID: " + campusUID + ", campus UID: " + campusUID;
         throw new BadPasswordException(HttpServletResponse.SC_UNAUTHORIZED, msg);
     }
 
