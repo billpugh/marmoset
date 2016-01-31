@@ -96,6 +96,7 @@ public class GenericLDAPAuthenticationService implements ILDAPAuthenticationServ
 
     private boolean authenticateViaLDAP(String campusUID, String password) throws NamingException {
         try {
+            campusUID = Student.stripSuffixForLdap(campusUID);
             Hashtable<String, String> env = new Hashtable<String, String>(11);
             env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
             env.put(Context.PROVIDER_URL, ldapURL);

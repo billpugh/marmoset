@@ -119,7 +119,7 @@ public class Student  implements Comparable<Student> {
    private static final String ADMIN_SUFFIX = "admin";
    private static final String STUDENT_SUFFIX = "student";
 
-  private static String stripSuffixForLdap(String loginName) {
+  public static String stripSuffixForLdap(String loginName) {
 
     if (loginName.endsWith(ADMIN_SUFFIX))
       loginName = loginName.substring(0, loginName.length()
