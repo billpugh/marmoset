@@ -954,7 +954,8 @@ public class Student  implements Comparable<Student> {
     }
     
     public @CheckForNull Student lookupPseudoAccount (Connection conn) throws SQLException {
-    	if (!getCanImportCourses()) throw new RuntimeException();
+    	if (!getCanImportCourses()) 
+    		return null;
     	Student s = Student.lookupByCampusUID(campusUID, PSEUDO_ACCOUNT, conn);
     	if (s == null) return null;
     	if (!s.isPseudoAccount()) 
