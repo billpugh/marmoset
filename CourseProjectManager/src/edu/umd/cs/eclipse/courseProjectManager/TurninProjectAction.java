@@ -69,6 +69,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.PluginVersionIdentifier;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -1108,8 +1109,8 @@ public class TurninProjectAction implements IObjectActionDelegate {
 		
 		addParameter(post, "courseKey", allProperties);
 		addParameter(post, "projectNumber", allProperties);
-        
-
+		post.addParameter("submitClientVersion", AutoCVSPlugin
+				.getPlugin().getVersion());
 
 		HttpClient client = new HttpClient();
 		client.setConnectionTimeout(5000);
@@ -1128,7 +1129,9 @@ public class TurninProjectAction implements IObjectActionDelegate {
 	}
 	
 	static void addParameter(PostMethod post, String name, Properties properties) {
-	    post.addParameter(name, properties.getProperty(name));
+	    String property = properties.getProperty(name);
+		if (property != null)
+			post.addParameter(name, property);
 	}
 	
 }
