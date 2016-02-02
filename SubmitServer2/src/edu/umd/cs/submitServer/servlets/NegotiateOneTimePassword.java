@@ -68,6 +68,9 @@ public class NegotiateOneTimePassword extends SubmitServerServlet {
         return accessLog;
     }
 
+    private static final  Logger submissionLogger = Logger
+        .getLogger(SUBMISSION_LOG);
+
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -124,7 +127,19 @@ public class NegotiateOneTimePassword extends SubmitServerServlet {
                 String semester = parser.getOptionalCheckedParameter("semester");
                 if (semester == null)
                     semester = webProperties.getRequiredProperty("semester");
+                
+                
                 String section = parser.getOptionalCheckedParameter("section");
+                submissionLogger.warn(
+                    String.format("submission with no course key: courseName: %s, section: %s, loginName: %s",
+                        courseName, section, loginName));
+              
+                System.out.println("WARNING: No course key provided");
+                System.out.println("Course name: " + courseName);
+                System.out.println("Section: " + section);
+                
+                
+                
                 
                 project = Project.lookupByCourseProjectSemester(courseName, section, projectNumber, semester, conn);
                 if (project == null) {
@@ -135,7 +150,7 @@ public class NegotiateOneTimePassword extends SubmitServerServlet {
                     return;
                 }
             }
-            
+            boolean skipAuthentication = "true".equals(webProperties.getProperty(SKIP_AUTHENTICATION));
            
             // authenticate the student and find their Student record
             student = PerformLogin.authenticateStudent(conn, loginName, password, skipAuthentication, getIAuthenticationService());
@@ -229,5 +244,4 @@ public class NegotiateOneTimePassword extends SubmitServerServlet {
         out.close();
     }
 
-    boolean skipAuthentication;
 }
