@@ -98,8 +98,21 @@ public class RegisterStudentsFilter extends SubmitServerFilter {
                 // format
                 if (line.startsWith("Last,First,UID,section,ClassAcct,DirectoryID"))
                     continue;
-                if (line.startsWith(",,,,,"))
+                if (line.startsWith(",,,,,")) {
+                  if (line.equals(",,,,,"))
                     continue;
+                  String ldap = line.substring(5);
+                  Student student = Student.lookupByLoginName(ldap, conn);
+                  if (student != null) {
+                  StudentRegistration sr = StudentForUpload.registerStudent(course,
+                          student, "", ldap,  null, conn);
+                  registeredStudents.add(sr);
+                  } else 
+                    errors.add("Did not find " + ldap);
+                  
+                  continue;
+          
+                }
                 if (line.startsWith("#"))
                     continue;
 
