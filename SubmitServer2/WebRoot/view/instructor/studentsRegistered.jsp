@@ -57,7 +57,7 @@
 
 <c:if test="${not empty errors}">
 <h1>Registration errors</h1>
-  <c:forEach var="error" items="${error}" varStatus="counter">
+  <c:forEach var="error" items="${errors}" varStatus="counter">
   <pre><c:out value="${error}"/></pre>
   </c:forEach>
 </c:if>
