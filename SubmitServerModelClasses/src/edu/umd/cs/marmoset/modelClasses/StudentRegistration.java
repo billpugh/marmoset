@@ -387,7 +387,7 @@ public class StudentRegistration implements Comparable<StudentRegistration> {
     /**
      * @param instructorCapability The instructorCapability to set.
      */
-    public void setInstructorCapability(@Capability String instructorCapability)
+    public void setInstructorCapability(@CheckForNull @Capability String instructorCapability)
     {
         this.instructorCapability = instructorCapability;
     }
