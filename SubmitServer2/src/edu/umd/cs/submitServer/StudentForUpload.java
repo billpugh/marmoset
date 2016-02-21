@@ -31,6 +31,7 @@ package edu.umd.cs.submitServer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import edu.umd.cs.marmoset.modelClasses.Course;
@@ -174,7 +175,7 @@ public class StudentForUpload {
 	
 	public static StudentRegistration registerStudent(Course course, Student student,
 			String section,
-			String classAccount, @Capability String capability, Connection conn) throws SQLException {
+			String classAccount, @CheckForNull @Capability String capability, Connection conn) throws SQLException {
 		
 		StudentRegistration registration = StudentRegistration
 				.lookupByStudentPKAndCoursePK(student.getStudentPK(),
