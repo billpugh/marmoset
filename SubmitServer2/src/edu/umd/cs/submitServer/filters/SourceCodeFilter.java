@@ -122,6 +122,7 @@ public class SourceCodeFilter extends SubmitServerFilter {
 			// more easily
 			if (testType != null) 
 			    request.setAttribute(TEST_TYPE, testType);
+			request.setAttribute(TEST_TYPE_STRING, testTypeString);
 			request.setAttribute(TEST_NUMBER, testNumber);
 			request.setAttribute(HYBRID_TEST_TYPE, hybridTestType);
 			TestOutcomeCollection currentTestOutcomes = (TestOutcomeCollection) request
