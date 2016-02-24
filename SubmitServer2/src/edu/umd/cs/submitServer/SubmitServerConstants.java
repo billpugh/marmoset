@@ -102,7 +102,8 @@ public interface SubmitServerConstants {
 	public static final String PUBLIC_STUDENT = "public-student";
 	public static final String RELEASE_UNIQUE = "release-unique";
 	public static final String CARDINAL = "cardinal";
-	public static final String FAILING_ONLY = "failing-only";
+	public static final String ALL_TESTS = "all";
+  public static final String FAILING_ONLY = "failing-only";
 	public static final String HYBRID_TEST_TYPE = "hybridTestType";
 	public static final String TEST_NUMBER = "testNumber";
 	public static final String TEST_TYPE = "testType";
