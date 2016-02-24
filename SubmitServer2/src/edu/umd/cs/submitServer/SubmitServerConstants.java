@@ -106,6 +106,8 @@ public interface SubmitServerConstants {
 	public static final String HYBRID_TEST_TYPE = "hybridTestType";
 	public static final String TEST_NUMBER = "testNumber";
 	public static final String TEST_TYPE = "testType";
+	public static final String TEST_TYPE_STRING = "testTypeString";
+
 	public static final String MULTIPART_REQUEST = "multipartRequest";
 	public static final String STUDENT_REGISTRATION = "studentRegistration";
 	public static final String STUDENT_SUBMIT_STATUS = "studentSubmitStatus";
