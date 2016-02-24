@@ -181,26 +181,36 @@ public class SourceCodeFilter extends SubmitServerFilter {
 							codeCoverageResults
 									.excluding(publicStudentCoverage);
 							getSubmitServerFilterLog().trace(
-									"instructor " + testType + ", "
+									"instructor " + testTypeString + ", "
 											+ testNumber);
 						} else if (SubmitServerConstants.PUBLIC_STUDENT
 								.equals(testTypeString)) {
 							codeCoverageResults = currentTestOutcomes
 									.getOverallCoverageResultsForPublicAndStudentTests();
 							getSubmitServerFilterLog().trace(
-									"instructor " + testType + ", "
+									"instructor " + testTypeString + ", "
 											+ testNumber);
 						} else if (SubmitServerConstants.CARDINAL
-								.equals(testTypeString)) {
-							codeCoverageResults = currentTestOutcomes
-									.getOverallCoverageResultsForCardinalTests();
-							request.setAttribute(
-									SubmitServerConstants.TEST_TYPE,
-									"public/release/secret");
-							getSubmitServerFilterLog().trace(
-									"instructor " + testType + ", "
-											+ testNumber);
-						} else {
+                .equals(testTypeString)) {
+              codeCoverageResults = currentTestOutcomes
+                  .getOverallCoverageResultsForCardinalTests();
+              request.setAttribute(
+                  SubmitServerConstants.TEST_TYPE,
+                  "public/release/secret");
+              getSubmitServerFilterLog().trace(
+                  "instructor " + testTypeString + ", "
+                      + testNumber);
+						} else if (SubmitServerConstants.ALL_TESTS
+                .equals(testTypeString)) {
+              codeCoverageResults = currentTestOutcomes
+                  .getOverallCoverageResultsForAllTests();
+              request.setAttribute(
+                  SubmitServerConstants.TEST_TYPE,
+                  "all");
+              getSubmitServerFilterLog().trace(
+                  "instructor " + testTypeString + ", "
+                      + testNumber);
+            } else {
 							// TODO Create a link so instructors can get all
 							// test results
 							// TODO Handle combinations of test cases
@@ -310,7 +320,7 @@ public class SourceCodeFilter extends SubmitServerFilter {
 						.canActivateCapabilities());
 				getSubmitServerFilterLog().error(
 						"Error getting code coverage (testType:\""
-								+ testTypeStr + "\", testNumber:\""
+								+ testTypeStr + ":" + testTypeString + "\", testNumber:\""
 								+ testNumberStr + "\", instructor:\""
 								+ instructor + "\")", e);
 			}
