@@ -5,6 +5,7 @@
 	test="${project.tested 
     and testProperties.language == 'java' 
     and testProperties.performCodeCoverage}">
+    <p style="margin-left: 1em">Test type: <c:out value="${testType}"/>
 	<c:if
 		test="${! empty testType  and testTypeString != 'none' and ! empty testNumber}">
 		<p style="margin-left: 1em">
@@ -22,6 +23,7 @@
 		<input type=hidden name="submissionPK" value="${submission.submissionPK}" />
 		<input type=hidden name="testNumber" value="all" /> 
         <input type=hidden name="sourceFileName" value="${sourceFileName}"/>
+        <input type="hidden" name="previousTestType" value="${testType}"/> 
 		Change code coverage:
 	   <select	name="testType" onchange="javascript:this.form.submit();">
 			<option value="none" ${ss:selectedOrNull(testType,"none")} >no
