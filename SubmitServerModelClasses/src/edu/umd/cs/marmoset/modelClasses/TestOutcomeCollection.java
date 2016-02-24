@@ -1174,6 +1174,13 @@ public class TestOutcomeCollection implements ITestSummary<TestOutcomeCollection
     {
     	return getCodeCoverageResultsOfGivenType(TestOutcome.TestType.PUBLIC, TestOutcome.TestType.STUDENT);
     }
+    
+    public CodeCoverageResults getOverallCoverageResultsForAllTests()
+    	    throws IOException
+    	    {
+    	    	return getCodeCoverageResultsOfGivenType(TestOutcome.TestType.PUBLIC, TestOutcome.TestType.STUDENT,
+    	    			TestOutcome.TestType.RELEASE, TestOutcome.TestType.SECRET);
+    	    }
     /**
      * Get the code coverage results divided up by packages.
      * @param packageNameList
