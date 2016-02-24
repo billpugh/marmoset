@@ -5,8 +5,8 @@
 	test="${project.tested 
     and testProperties.language == 'java' 
     and testProperties.performCodeCoverage}">
-    <p style="margin-left: 1em">Test type: <c:out value="${testType}"/>
-    <p style="margin-left: 1em">Test type string: <c:out value="${testTypeString}"/>
+    
+   
 	
 	<c:if
 		test="${! empty testType  and testTypeString != 'none' and ! empty testNumber}">
@@ -19,13 +19,14 @@
 		</p>
 	</c:if>
     <c:set var="escapedFileName"><c:out value="${sourceFileName}"/></c:set>
-	<p>
-	<form class="form" action="${pageContext.request.requestURL}"
+	<p><form class="form" action="${pageContext.request.requestURL}"
 		method="GET">
 		<input type=hidden name="submissionPK" value="${submission.submissionPK}" />
 		<input type=hidden name="testNumber" value="all" /> 
         <input type=hidden name="sourceFileName" value="${sourceFileName}"/>
         <input type="hidden" name="previousTestType" value="${testType}"/> 
+		<input type="hidden" name="previousTestTypeString" value="${testTypeString}"/> 
+		<input type="hidden" name="previousHybridTestType" value="${hybridTestType}"/> 
 		Change code coverage:
 	   <select	name="testType" onchange="javascript:this.form.submit();">
 			<option value="none" ${ss:selectedOrNull(testType,"none")} >no
