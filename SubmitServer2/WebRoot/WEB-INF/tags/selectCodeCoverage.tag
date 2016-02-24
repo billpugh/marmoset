@@ -6,6 +6,8 @@
     and testProperties.language == 'java' 
     and testProperties.performCodeCoverage}">
     <p style="margin-left: 1em">Test type: <c:out value="${testType}"/>
+    <p style="margin-left: 1em">Test type string: <c:out value="${testTypeString}"/>
+	
 	<c:if
 		test="${! empty testType  and testTypeString != 'none' and ! empty testNumber}">
 		<p style="margin-left: 1em">
