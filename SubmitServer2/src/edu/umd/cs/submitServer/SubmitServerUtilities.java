@@ -119,9 +119,12 @@ public final class SubmitServerUtilities {
 	 */
 	
 	public static <T> String selected(@CheckForNull T currentVal, T selectVal) {
-	    if (currentVal instanceof Enum<?>
-	            && ((Enum<?>)currentVal).name().equals(selectVal))
+	    if (currentVal instanceof Enum<?> && selectVal instanceof String
+	            && ((Enum<?>)currentVal).name().equalsIgnoreCase((String)selectVal))
 	        return "selected";
+	    if (currentVal instanceof String && selectVal instanceof String
+	        && ((String)currentVal).equalsIgnoreCase((String) selectVal)) 
+	      return "selected";
 		return currentVal != null && currentVal.equals(selectVal) ? "selected" : "";
 	}
 	/**
@@ -133,6 +136,6 @@ public final class SubmitServerUtilities {
 	 * @return "selected" if it should be selected, "" (empty string) otherwise
 	 */
 	public static String selectedOrNull(@CheckForNull String currentVal, String selectVal) {
-		return currentVal == null || currentVal.isEmpty() || currentVal.equals(selectVal) ? "selected" : "";
+		return currentVal == null || currentVal.isEmpty() || currentVal.equalsIgnoreCase(selectVal) ? "selected" : "";
 	}
 }
