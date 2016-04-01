@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  */
 public class FilesToIgnore {
 
-    private static final String baseIgnoredPatterns = "RCS SCCS CVS CVS.adm RCSLOG cvslog.* tags TAGS .make.state .nse_depinfo"
+    private static final String baseIgnoredPatterns = "RCS SCCS CVS .git CVS.adm RCSLOG cvslog.* tags TAGS .make.state .nse_depinfo"
             + " *~ #* .#* ,* _$* *$ *.old *.bak *.BAK *.orig *.rej .del-* *.a *.olb *.o *.obj *.so *.exe *.Z *.elc *.ln *.class core";
 
     StringBuffer patternBuffer;
