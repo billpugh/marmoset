@@ -982,14 +982,16 @@ public class Project implements Serializable, Cloneable {
     /**
      * Downloads the bytes of the archive from the database and returns them directly.
      * @param conn the connection to the database
-     * @return an array of bytes of the cached archive
+     * @return an array of bytes of the cached archive, null if none
      * @throws SQLException
      */
-    public byte[] getBaselineZip(Connection conn)
+    public @CheckForNull byte[] getBaselineZip(Connection conn)
     throws SQLException
     {
-    		if (cachedArchive == null)
-    		  cachedArchive = Archive.downloadBytesFromArchive(PROJECT_STARTER_FILE_ARCHIVES, getArchivePK(), conn);
+    		if (cachedArchive != null) return cachedArchive;
+    		Integer archivePK = getArchivePK();
+    		if (archivePK == null) return null;
+    		cachedArchive = Archive.downloadBytesFromArchive(PROJECT_STARTER_FILE_ARCHIVES, archivePK, conn);
     		return cachedArchive;
     }
 
