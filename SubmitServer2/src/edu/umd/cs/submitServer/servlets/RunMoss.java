@@ -127,7 +127,7 @@ public class RunMoss extends SubmitServerServlet {
 						for(Map.Entry<String,List<String>> e : files.entrySet()) {
 						  String name = e.getKey();
 						  name = name.substring(name.lastIndexOf('/')+1);
-						  if (seen.add(name)) {
+						  if (name.endsWith(".c") && seen.add(name)) {
 						    name = registration.getClassAccount() +"/" + name;
 						    System.out.println("Sending " + name);
 						    socketClient.uploadFile(name, 
