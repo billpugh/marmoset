@@ -96,7 +96,9 @@ public class RunMoss extends SubmitServerServlet {
     extensions.add(".c++"); break;
     
     case "c": extensions.add(".h"); extensions.add(".c"); break;
-    default: throw new RuntimeException("Invalid language " + language);
+    case "prolog": extensions.add(".pl"); break;
+    
+    default: extensions.add(language);
     }
     try {
       conn = getConnection();
@@ -136,6 +138,7 @@ public class RunMoss extends SubmitServerServlet {
       // finished uploading, tell server to check files
       socketClient.sendQuery();
       URL results = socketClient.getResultURL();
+      System.out.println("Moss results at " + results);
       response.sendRedirect(results.toString());
 
     } catch (SQLException e) {
