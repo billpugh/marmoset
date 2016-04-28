@@ -456,8 +456,16 @@ any server based compilation and testing
 
 <h3>Student Submissions</h3>
 <ul>
-    <c:if test="${project.tested}">
-	<li><p>	<c:url var="downloadBestSubmissionsLink" value="/data/instructor/DownloadBestSubmissions">
+
+    <li><p>	<c:url var="runMossLink" value="/action/instructor/RunMoss">
+			<c:param name="projectPK" value="${project.projectPK}"/>
+		</c:url>
+		<a href="${runMossLink}">
+		Run Moss against all students' <b>last</b> submissions
+		</a></p></li>
+		
+	 <c:if test="${project.tested}">
+   <li><p>	<c:url var="downloadBestSubmissionsLink" value="/data/instructor/DownloadBestSubmissions">
 			<c:param name="projectPK" value="${project.projectPK}"/>
 		</c:url>
 		<a href="${downloadBestSubmissionsLink}">
