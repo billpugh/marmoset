@@ -533,6 +533,10 @@
     <filter-name>AllStudentsSummaryFilter</filter-name>
     <url-pattern>/data/instructor/DownloadBestSubmissions</url-pattern>
   </filter-mapping>
+   <filter-mapping>
+    <filter-name>AllStudentsSummaryFilter</filter-name>
+    <url-pattern>/action/instructor/RunMoss</url-pattern>
+  </filter-mapping>
   <filter-mapping>
     <filter-name>AllStudentsSummaryFilter</filter-name>
     <url-pattern>/data/instructor/DownloadMostRecentOnTimeAndLateSubmissions</url-pattern>
@@ -1077,6 +1081,10 @@
     <servlet-name>DownloadBestSubmissions</servlet-name>
     <servlet-class>edu.umd.cs.submitServer.servlets.DownloadBestSubmissions</servlet-class>
   </servlet>
+    <servlet>
+    <servlet-name>RunMoss</servlet-name>
+    <servlet-class>edu.umd.cs.submitServer.servlets.RunMoss</servlet-class>
+  </servlet>
   <servlet>
     <servlet-name>ReComputePointValues</servlet-name>
     <servlet-class>edu.umd.cs.submitServer.servlets.ReComputePointValues</servlet-class>
@@ -1398,6 +1406,10 @@
     <url-pattern>/data/instructor/DownloadBestSubmissions</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
+    <servlet-name>RunMoss</servlet-name>
+    <url-pattern>/action/instructor/RunMoss</url-pattern>
+  </servlet-mapping>
+ <servlet-mapping>
     <servlet-name>ReComputePointValues</servlet-name>
     <url-pattern>/action/instructor/ReComputePointValues</url-pattern>
   </servlet-mapping>
