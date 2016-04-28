@@ -251,7 +251,7 @@ function changedIsTested(isTested)
 			from a late submission">
 			Late Constant
 		</td>
-		<td class="input"><input type="text" name="lateConstant" value="0" size="5"/></td>
+		<td class="input"><input type="text" name="lateConstant" value="20" size="5"/></td>
 	</tr>
 
 	<tr>
@@ -259,7 +259,7 @@ function changedIsTested(isTested)
 			a late submission">
 			Late Multiplier
 		</td>
-		<td class="input"><input type="text" name="lateMultiplier" value="0" size="5"/></td>
+		<td class="input"><input type="text" name="lateMultiplier" value="0.8" size="5"/></td>
 	</tr>
 
 	<tr title="Set to 'everything' if you want  students to see all outcomes (public, release and secret)  after the deadline passes.">
