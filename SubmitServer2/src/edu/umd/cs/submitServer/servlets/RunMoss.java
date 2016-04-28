@@ -65,95 +65,110 @@ import it.zielke.moji.SocketClient;
  */
 public class RunMoss extends SubmitServerServlet {
 
-	/**
-	 * The doGet method of the servlet. <br>
-	 *
-	 * This method is called when a form has its tag value method equals to get.
-	 *
-	 * @param request
-	 *            the request send by the client to the server
-	 * @param response
-	 *            the response send by the server to the client
-	 * @throws ServletException
-	 *             if an error occurred
-	 * @throws IOException
-	 *             if an error occurred
-	 */
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		Connection conn = null;
-		SocketClient socketClient = new SocketClient();
+  /**
+   * The doGet method of the servlet. <br>
+   *
+   * This method is called when a form has its tag value method equals to get.
+   *
+   * @param request
+   *          the request send by the client to the server
+   * @param response
+   *          the response send by the server to the client
+   * @throws ServletException
+   *           if an error occurred
+   * @throws IOException
+   *           if an error occurred
+   */
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    Connection conn = null;
+    SocketClient socketClient = new SocketClient();
 
     // set your MOSS user ID
     socketClient.setUserID("166942184");
     // socketClient.setOpt...
+    String language = request.getParameter("language");
+    HashSet<String> extensions = new HashSet<>();
+    switch (language) {
+    case "java": extensions.add(".java"); break;
+    case "cc": extensions.add(".h"); extensions.add(".c"); 
+    extensions.add(".cc"); extensions.add(".C"); extensions.add(".cxx"); 
+    extensions.add(".c++"); break;
+    
+    case "c": extensions.add(".h"); extensions.add(".c"); break;
+    default: throw new RuntimeException("Invalid language " + language);
+    }
+    try {
+      conn = getConnection();
+      // set the programming language of all student source codes
+     
+      socketClient.setLanguage(language);
+      // initialize connection and send parameters
+      socketClient.run();
+      System.out.println("talking to moss server");
 
-   
-		try {
-			conn = getConnection();
-			 // set the programming language of all student source codes
-	    socketClient.setLanguage("c");
-	    // initialize connection and send parameters
-	    socketClient.run();
-	    System.out.println("talking to moss server");
+      // get the project and all the student registrations
+      Map<Integer, Submission> lastSubmissionMap = (Map<Integer, Submission>) request.getAttribute("lastSubmission");
 
-			// get the project and all the student registrations
-			Map<Integer, Submission> lastSubmissionMap = (Map<Integer, Submission>) request
-					.getAttribute("lastSubmission");
-		
+      System.out.println("best submissions: " + lastSubmissionMap.keySet());
+      Project project = (Project) request.getAttribute("project");
 
-	      System.out.println("best submissions: " + lastSubmissionMap.keySet());
-	  	Project project = (Project) request.getAttribute("project");
-			
-			Set<StudentRegistration> registrationSet = (Set<StudentRegistration>) request
-					.getAttribute("studentRegistrationSet");
-			
-			for (StudentRegistration registration : registrationSet) {
-			  Submission submission = lastSubmissionMap.get(registration
-						.getStudentRegistrationPK());
-					if (submission == null) {
-				  System.out.println("No submission for #" + 
-				registration.getStudentRegistrationPK() + " " + registration.getClassAccount());
-				} else {
-				  System.out.println("Uploading files for " + registration.getClassAccount());
-	        
-					try {
-						byte[] bytes = submission.downloadArchive(conn);
-						HashSet<String> seen = new HashSet<>();
-						Map<String, List<String>> files 
-						  = TextUtilities.scanTextFilesInZip(new ByteArrayInputStream(bytes));
-					  
-						for(Map.Entry<String,List<String>> e : files.entrySet()) {
-						  String name = e.getKey();
-						  name = name.substring(name.lastIndexOf('/')+1);
-						  if (name.endsWith(".c") && seen.add(name)) {
-						    name = registration.getClassAccount() +"/" + name;
-						    System.out.println("Sending " + name);
-						    socketClient.uploadFile(name, 
-						        e.getValue(), false);
-						  }
-						}
-					} catch (Exception e) {
-					  e.printStackTrace();
-					}
-				}
-			}
+      byte[] baseline = project.getBaselineZip(conn);
+      if (baseline != null) {
+        uploadSubmission(socketClient, "baseline", baseline, true, extensions);
+      }
+      Set<StudentRegistration> registrationSet = (Set<StudentRegistration>) request
+          .getAttribute("studentRegistrationSet");
 
-		  // finished uploading, tell server to check files
-	    socketClient.sendQuery();
-	    URL results = socketClient.getResultURL();
-	    response.sendRedirect(results.toString());
-	    
-		} catch (SQLException e) {
-			handleSQLException(e);
-			throw new ServletException(e);
-		} catch (MossException e) {
-		  throw new ServletException(e);
-		} finally {
-			releaseConnection(conn);
-			
-		}
-	}
+      for (StudentRegistration registration : registrationSet) {
+        Submission submission = lastSubmissionMap.get(registration.getStudentRegistrationPK());
+        String classAccount = registration.getClassAccount();
+        if (submission == null) {
+          System.out.println("No submission for #" + registration.getStudentRegistrationPK() + " " + classAccount);
+        } else {
+          System.out.println("Uploading files for " + classAccount);
+          byte[] bytes = submission.downloadArchive(conn);
+
+          uploadSubmission(socketClient, classAccount, bytes, false, extensions);
+        }
+      }
+
+      // finished uploading, tell server to check files
+      socketClient.sendQuery();
+      URL results = socketClient.getResultURL();
+      response.sendRedirect(results.toString());
+
+    } catch (SQLException e) {
+      handleSQLException(e);
+      throw new ServletException(e);
+    } catch (MossException e) {
+      throw new ServletException(e);
+    } finally {
+      releaseConnection(conn);
+
+    }
+  }
+
+ static private void uploadSubmission(SocketClient socketClient, String classAccount, byte[] bytes, boolean baselline,
+      HashSet<String> extensions) {
+    try {
+      HashSet<String> seen = new HashSet<>();
+      Map<String, List<String>> files = TextUtilities.scanTextFilesInZip(new ByteArrayInputStream(bytes));
+
+      for (Map.Entry<String, List<String>> e : files.entrySet()) {
+        String name = e.getKey();
+        name = name.substring(name.lastIndexOf('/') + 1);
+        int lastDot = name.lastIndexOf('.');
+        if (lastDot >= 0 && extensions.contains(name.substring(lastDot))
+            && seen.add(name)) {
+          name = classAccount + "/" + name;
+          System.out.println("Sending " + name);
+          socketClient.uploadFile(name, e.getValue(), false);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
 }

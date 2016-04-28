@@ -457,13 +457,20 @@ any server based compilation and testing
 <h3>Student Submissions</h3>
 <ul>
 
-    <li><p>	<c:url var="runMossLink" value="/action/instructor/RunMoss">
-			<c:param name="projectPK" value="${project.projectPK}"/>
-		</c:url>
-		<a href="${runMossLink}">
-		Run Moss against all students' <b>last</b> submissions
-		</a></p></li>
-		
+<li><p>	Run Moss against all students' <b>last</b> submissions
+<c:url var="runMossLink" value="/action/instructor/RunMoss"/>
+<form method="POST" action="${runMossLink}">
+Programming language: <select name="language"  required>
+<option value="java">Java</option>
+<option value="c">C</option>
+<option value="cc">C++</option>
+</select>						
+	<input type="hidden" name="projectPK" value="${project.projectPK}">
+	<p><input type="submit" value="Run Moss (this will take a while; be patient)"></p>
+</form>
+</li>
+
+
 	 <c:if test="${project.tested}">
    <li><p>	<c:url var="downloadBestSubmissionsLink" value="/data/instructor/DownloadBestSubmissions">
 			<c:param name="projectPK" value="${project.projectPK}"/>
