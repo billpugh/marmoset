@@ -32,12 +32,12 @@
 			<option value="none" ${ss:selectedOrNull(testType,"none")} >no
 				code coverage</option>
 			<option value="public" ${ss:selected(testType,"public")} >Public</option>
-			<option value="public-student" ${ss:selected(testType,"public-student")} >Public
+			<option value="public-student" ${ss:selected(testTypeString,"public-student")} >Public
 				and Student</option>
 			<c:if test="${instructorCapability}">
-			<option value="cardinal" ${ss:selected(testType,"cardinal")}  >All
+			<option value="cardinal" ${ss:selected(testTypeString,"cardinal")}  >All
 				Instructor</option>
-			<option value="release-unique" ${ss:selected(testType,"release-unique")}  >Instructor
+			<option value="release-unique" ${ss:selected(testTypeString,"release-unique")}  >Instructor
 				but not student</option>
 			<option value="all" ${ss:selected(testType,"all")}>All</option>
 			</c:if>
