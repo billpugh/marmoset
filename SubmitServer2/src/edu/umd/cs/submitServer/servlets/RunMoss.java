@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -83,7 +84,9 @@ public class RunMoss extends SubmitServerServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     Connection conn = null;
     SocketClient socketClient = new SocketClient();
-
+    response.setContentType("text/plain");
+    PrintWriter writer = response.getWriter();
+    writer.println("Preparing to run moss");
     // set your MOSS user ID
     socketClient.setUserID("166942184");
     // socketClient.setOpt...
@@ -103,16 +106,18 @@ public class RunMoss extends SubmitServerServlet {
     try {
       conn = getConnection();
       // set the programming language of all student source codes
-     
+
+      
       socketClient.setLanguage(language);
+
       // initialize connection and send parameters
       socketClient.run();
-      System.out.println("talking to moss server");
-
+      writer.println("Connection to moss server started");
+     
       // get the project and all the student registrations
       Map<Integer, Submission> lastSubmissionMap = (Map<Integer, Submission>) request.getAttribute("lastSubmission");
 
-      System.out.println("best submissions: " + lastSubmissionMap.keySet());
+      writer.println("best submissions: " + lastSubmissionMap.keySet());
       Project project = (Project) request.getAttribute("project");
 
       byte[] baseline = project.getBaselineZip(conn);
@@ -126,19 +131,19 @@ public class RunMoss extends SubmitServerServlet {
         Submission submission = lastSubmissionMap.get(registration.getStudentRegistrationPK());
         String classAccount = registration.getClassAccount();
         if (submission == null) {
-          System.out.println("No submission for #" + registration.getStudentRegistrationPK() + " " + classAccount);
+          writer.println("No submission for #" + registration.getStudentRegistrationPK() + " " + classAccount);
         } else {
-          System.out.println("Uploading files for " + classAccount);
+          writer.println("Uploading files for " + classAccount);
           byte[] bytes = submission.downloadArchive(conn);
 
-          uploadSubmission(socketClient, classAccount, bytes, false, extensions);
+          uploadSubmission(writer, socketClient, classAccount, bytes, false, extensions);
         }
       }
 
       // finished uploading, tell server to check files
-      socketClient.sendQuery();
+      socketClient.sendQuery(5000, () -> writer.println("waiting..."));
       URL results = socketClient.getResultURL();
-      System.out.println("Moss results at " + results);
+      writer.println("Moss results at " + results);
       response.sendRedirect(results.toString());
 
     } catch (SQLException e) {
@@ -152,7 +157,7 @@ public class RunMoss extends SubmitServerServlet {
     }
   }
 
- static private void uploadSubmission(SocketClient socketClient, String classAccount, byte[] bytes, boolean baselline,
+ static private void uploadSubmission(PrintWriter writer, SocketClient socketClient, String classAccount, byte[] bytes, boolean baselline,
       HashSet<String> extensions) {
     try {
       HashSet<String> seen = new HashSet<>();
@@ -165,7 +170,7 @@ public class RunMoss extends SubmitServerServlet {
         if (lastDot >= 0 && extensions.contains(name.substring(lastDot))
             && seen.add(name)) {
           name = classAccount + "/" + name;
-          System.out.println("Sending " + name);
+          writer.println("  Sending " + name);
           socketClient.uploadFile(name, e.getValue(), false);
         }
       }
