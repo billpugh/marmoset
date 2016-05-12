@@ -87,6 +87,7 @@ public class RunMoss extends SubmitServerServlet {
     response.setContentType("text/plain");
     PrintWriter writer = response.getWriter();
     writer.println("Preparing to run moss");
+    writer.flush();
     // set your MOSS user ID
     socketClient.setUserID("166942184");
     // socketClient.setOpt...
@@ -113,7 +114,7 @@ public class RunMoss extends SubmitServerServlet {
       // initialize connection and send parameters
       socketClient.run();
       writer.println("Connection to moss server started");
-     
+      writer.flush();
       // get the project and all the student registrations
       Map<Integer, Submission> lastSubmissionMap = (Map<Integer, Submission>) request.getAttribute("lastSubmission");
 
@@ -135,16 +136,17 @@ public class RunMoss extends SubmitServerServlet {
         } else {
           writer.println("Uploading files for " + classAccount);
           byte[] bytes = submission.downloadArchive(conn);
-
+          writer.flush();
           uploadSubmission(writer, socketClient, classAccount, bytes, false, extensions);
         }
       }
 
       // finished uploading, tell server to check files
-      socketClient.sendQuery(5000, () -> writer.println("waiting..."));
+      socketClient.sendQuery(5000, () -> { writer.println("waiting..."); writer.flush(); });
       URL results = socketClient.getResultURL();
       writer.println("Moss results at " + results);
-      response.sendRedirect(results.toString());
+      writer.flush();
+      writer.close();
 
     } catch (SQLException e) {
       handleSQLException(e);
