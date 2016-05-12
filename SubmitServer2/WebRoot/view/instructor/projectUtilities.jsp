@@ -464,6 +464,8 @@ Programming language: <select name="language"  required>
 <option value="java">Java</option>
 <option value="c">C</option>
 <option value="cc">C++</option>
+<option value="ml">OCaml</option>
+<option value="prolog">Prolog</option>
 </select>						
 	<input type="hidden" name="projectPK" value="${project.projectPK}">
 	<p><input type="submit" value="Run Moss (this will take a while; be patient)"></p>
