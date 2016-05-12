@@ -122,7 +122,7 @@ public class RunMoss extends SubmitServerServlet {
 
       byte[] baseline = project.getBaselineZip(conn);
       if (baseline != null) {
-        uploadSubmission(socketClient, "baseline", baseline, true, extensions);
+        uploadSubmission(writer, socketClient, "baseline", baseline, true, extensions);
       }
       Set<StudentRegistration> registrationSet = (Set<StudentRegistration>) request
           .getAttribute("studentRegistrationSet");
