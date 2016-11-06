@@ -50,16 +50,19 @@
 		<td class="error"> &nbsp; </td>
 		<td class="description">  The test case failed due to a run-time exception,
 		such as a NullPointerException or a ClassCastException.  If a run-time
-		exception happens in the JUnit test case, this is considered a "failure" rather than
+		exception happens in the JUnit test case code, this is considered a "failure" rather than
 		an "error".
 		</td>
 	</tr>
 	<tr class="r0">
 		<td> not_implemented </td>
 		<td class="not_implemented"> &nbsp; </td>
-		<td class="description">  The test case failed because it has not yet been implemented.
+		<td class="description">  The test case failed because it invokes functional 
+		that is not implemented or supported
+		(i.e., throws UnsupportedOperationException).
 		Many Java projects initially contain "stub" implementations
-		of each method that throw java.lang.UnsupportedOperationException.
+		of each method that throw UnsupportedOperationException, which makes it easy to distinguish 
+		between test case that are failing and test cases invoking functionality that isn't yet written.
 		</td>
 	</tr>
 	<tr class="r1">
@@ -72,7 +75,9 @@
 		<td> huh (security manager exception) </td>
 		<td class="huh"> &nbsp; </td>
 		<td class="description"> The test case invokes an operation that was blocked by the
-		security manager.
+		security manager. Alternative, the code throws an exception which contains an usual error message,
+		which may be an attempt by the student to leak information about confidential test
+		case input.
 		<p>
 		<b>Note:</b> Everything on the server is tested using a security manager.  It is very
 		unlikely that you are using a security manager on your computer.  Thus if code executes
