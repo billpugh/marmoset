@@ -140,7 +140,8 @@ public class RunMoss extends SubmitServerServlet {
           uploadSubmission(writer, socketClient, classAccount, bytes, false, extensions);
         }
       }
-
+      writer.println("All files uploaded");
+      
       // finished uploading, tell server to check files
       socketClient.sendQuery(5000, () -> { writer.println("waiting..."); writer.flush(); });
       URL results = socketClient.getResultURL();
