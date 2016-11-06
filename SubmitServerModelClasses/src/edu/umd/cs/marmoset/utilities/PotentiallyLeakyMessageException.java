@@ -5,12 +5,18 @@ public class PotentiallyLeakyMessageException extends SecurityException {
     
     static boolean needsSanitization(Throwable t) {
         String s = t.getMessage();
+        if (s.isEmpty()) return false;
+        
+        char firstChar = s.charAt(0);
+        if (!Character.isAlphabetic(firstChar) && !Character.isDefined(firstChar))
+            return true;
         int alphabeticCharacters = 0;
         int digitCharacters = 0;
         int numbers = 0;
         int spaceCharacters = 0;
         int nonSpaceWhiteSpace = 0;
         char prevChar = ' ';
+       
         for(int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == ' ') spaceCharacters++;
@@ -34,6 +40,7 @@ public class PotentiallyLeakyMessageException extends SecurityException {
             return true;
         if (alphabeticCharacters - digitCharacters - nonSpaceWhiteSpace*4 < s.length() * 3 / 4)
             return true;
+
         return false;
     }
     
