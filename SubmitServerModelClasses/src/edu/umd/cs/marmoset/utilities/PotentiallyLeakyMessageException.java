@@ -20,7 +20,7 @@ public class PotentiallyLeakyMessageException extends SecurityException {
         for(int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == ' ') spaceCharacters++;
-            if (Character.isAlphabetic(c)) alphabeticCharacters++;
+            else if (Character.isAlphabetic(c)) alphabeticCharacters++;
             else if (Character.isDigit(c)) {
                 if (!Character.isDigit(prevChar)) numbers++;
                 digitCharacters++;
@@ -38,7 +38,7 @@ public class PotentiallyLeakyMessageException extends SecurityException {
             return true;
         if (spaceCharacters == 0)
             return true;
-        if (alphabeticCharacters - digitCharacters - nonSpaceWhiteSpace*4 < s.length() * 3 / 4)
+        if (alphabeticCharacters - nonSpaceWhiteSpace*4 < s.length() * 3 / 4)
             return true;
 
         return false;
