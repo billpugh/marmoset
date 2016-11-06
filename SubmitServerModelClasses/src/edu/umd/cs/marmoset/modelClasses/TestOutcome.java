@@ -383,6 +383,9 @@ public class TestOutcome implements Serializable {
         return getTestType().equals(STUDENT);
     }
 
+    public boolean isConfidential() {
+        return isReleaseTest() || isSecretTest();
+    }
     public boolean isReleaseTest() {
         return getTestType().equals(RELEASE);
     }
@@ -621,7 +624,7 @@ public class TestOutcome implements Serializable {
 			
 			byte[] bytes = compress(longTestResult);
 			if (bytes.length <= MAX_LONG_TEST_RESULT_CHARS)
-				details = bytes;
+				setDetails(bytes);
 				this.longTestResult = LONG_TEST_RESULTS_ARE_COMPRESSED;
 				return;
 		}
