@@ -179,11 +179,9 @@ public class TestRunner extends BaseTestRunner {
 
 	@Override
 	public void testFailed(int status, Test test, Throwable t) {
-		
 	    
-	    if (currentTestOutcome.isConfidential()) {
-	        t = PotentiallyLeakyMessageException.sanitize(t);
-	    }
+	    t = PotentiallyLeakyMessageException.sanitize(t);
+	    
 	    Throwable original = t;
 
 	    Throwable cause = t.getCause();
