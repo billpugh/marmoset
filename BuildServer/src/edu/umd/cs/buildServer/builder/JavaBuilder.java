@@ -361,7 +361,11 @@ public class JavaBuilder extends Builder<JUnitTestProperties> implements TestPro
 		                    getProjectSubmission().getSrcDirectory().getAbsolutePath(),
 		                    "-d",
 		                    instSrcDirectory
-		                            .getAbsolutePath() };
+		                            .getAbsolutePath(),
+		                            "--recordTestResults", "true",
+		                            "-p", "threaded",
+		                            "-f", "10",
+		                            "-v"};
 			String coverageMarkupCmd = " ";
 			for (int ii = 0; ii < cliArgs.length; ii++) {
 				coverageMarkupCmd += cliArgs[ii] + " ";
@@ -527,8 +531,10 @@ public class JavaBuilder extends Builder<JUnitTestProperties> implements TestPro
      *
      */
     public boolean isPerformCodeCoverage() {
-        return getTestProperties().isPerformCodeCoverage()
-                &&  Clover.isAvailable();
+        boolean performCodeCoverage = getTestProperties().isPerformCodeCoverage();
+		boolean available = Clover.isAvailable();
+		return performCodeCoverage
+                &&  available;
     }
 
 	public static void appendJUnitToClassPath(StringBuffer buf) {

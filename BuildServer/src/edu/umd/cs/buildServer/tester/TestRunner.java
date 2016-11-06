@@ -52,9 +52,11 @@ import org.junit.runner.manipulation.NoTestsRemainException;
 
 import edu.umd.cs.buildServer.BuildServer;
 import edu.umd.cs.buildServer.BuilderException;
+import edu.umd.cs.buildServer.builder.Clover;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.TestType;
 import edu.umd.cs.marmoset.modelClasses.TestOutcomeCollection;
+import edu.umd.cs.marmoset.utilities.PotentiallyLeakyMessageException;
 
 /**
  * Run some JUnit tests and record the outcomes.
@@ -178,12 +180,17 @@ public class TestRunner extends BaseTestRunner {
 	@Override
 	public void testFailed(int status, Test test, Throwable t) {
 		
-		Throwable original = t;
-		Throwable cause = t.getCause();
-		while (cause != null) {
-		    t = cause;
-		    cause = t.getCause();
-		}
+	    
+	    if (currentTestOutcome.isConfidential()) {
+	        t = PotentiallyLeakyMessageException.sanitize(t);
+	    }
+	    Throwable original = t;
+
+	    Throwable cause = t.getCause();
+	    while (cause != null) {
+	        t = cause;
+	        cause = t.getCause();
+	    }
 
 		// determine finer-grained cause of failure
 		if (notYetImplemented(t)) {
@@ -534,21 +541,34 @@ public class TestRunner extends BaseTestRunner {
 			
             out.writeObject(testOutcomes);
 			out.close();
+			
+			// If we are using Clover, flush output before we call System.exit(0);
+			Clover.globalFlush();
+			try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
 			// Shutdown the process.
 			// There may be non-daemon threads running which would
 			// keep the process alive if we just fell off the
 			// end of main().
-			System.exit(0);
+			// System.exit(0);
 		} catch (BuilderException e) {
 			getBuildServerLog().fatal("runTests() failed", e);
+			Clover.globalFlush();
 			System.exit(1);
 		} catch (IOException e) {
 			getBuildServerLog().fatal("TestRunner raised an IOException", e);
+			Clover.globalFlush();
 			System.exit(1);
 		} catch (LinkageError e) {
             getBuildServerLog().fatal("TestRunner raised a LinkageError", e);
+       
             e.printStackTrace();
+            Clover.globalFlush();
             System.exit(2);
         }
 	}
