@@ -4,8 +4,13 @@ public class PotentiallyLeakyMessageException extends SecurityException {
 
     
     static boolean needsSanitization(Throwable t) {
+        
+//        try (PrintWriter out =  new PrintWriter(
+//                new FileWriter("/tmp/sanitationLog.txt", true))) {
         String s = t.getMessage();
         if (s.isEmpty()) return false;
+//        t.printStackTrace(out);
+//        out.println(s);
         
         char firstChar = s.charAt(0);
         if (!Character.isAlphabetic(firstChar) && !Character.isDefined(firstChar))
@@ -27,21 +32,30 @@ public class PotentiallyLeakyMessageException extends SecurityException {
             }
             else if (Character.isWhitespace(c)
                     || Character.isISOControl(c)) nonSpaceWhiteSpace++;
-            
+            prevChar = c;
         }
+        
+//        out.printf("%d %d %d %d %d%n", s.length(), 
+//                nonSpaceWhiteSpace, numbers, digitCharacters, spaceCharacters);
         if (nonSpaceWhiteSpace > 2) 
             return true;
-        if (numbers > 8)
+//        out.println("OK1");
+        if (numbers > 10)
             return true; 
-            
+//        out.println("OK2");
         if (digitCharacters > s.length()/2)
             return true;
+//        out.println("OK3");
         if (spaceCharacters == 0)
             return true;
+//        out.println("OK4");
         if (alphabeticCharacters - nonSpaceWhiteSpace*4 < s.length() * 3 / 4)
             return true;
-
+//        out.println("OK5");
         return false;
+//        } catch (IOException e){
+//        return false;
+//    }
     }
     
     public static Throwable sanitize(Throwable original) {
