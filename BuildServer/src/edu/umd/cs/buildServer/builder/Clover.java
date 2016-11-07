@@ -24,8 +24,8 @@ public class Clover {
             cloverGlobalFlush = cloverRuntime.getDeclaredMethod("globalFlush");
             a = true;
         } catch (Exception e) {
-            System.err.println("Unable to load clover");
-        	e.printStackTrace();
+//            System.err.println("Unable to load clover");
+//        	e.printStackTrace();
             
         }
         available = a;
