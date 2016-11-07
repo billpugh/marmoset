@@ -49,7 +49,7 @@ public class PotentiallyLeakyMessageException extends SecurityException {
         if (numbers > 15)
             return true; 
 //        out.println("OK2");
-        if (digitCharacters > s.length()/2)
+        if (digitCharacters > 10 && digitCharacters > s.length()/2)
             return true;
 //        out.println("OK3");
 
