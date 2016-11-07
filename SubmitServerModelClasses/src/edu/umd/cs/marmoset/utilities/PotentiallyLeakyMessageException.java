@@ -1,5 +1,9 @@
 package edu.umd.cs.marmoset.utilities;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class PotentiallyLeakyMessageException extends SecurityException {
 
     
@@ -48,12 +52,7 @@ public class PotentiallyLeakyMessageException extends SecurityException {
         if (digitCharacters > s.length()/2)
             return true;
 //        out.println("OK3");
-        if (spaceCharacters == 0)
-            return true;
-//        out.println("OK4");
-        if (alphabeticCharacters - nonSpaceWhiteSpace*4 < s.length() * 3 / 4)
-            return true;
-//        out.println("OK5");
+
         return false;
 //        } catch (IOException e){
 //        return false;
