@@ -4,11 +4,13 @@ public class PotentiallyLeakyMessageException extends SecurityException {
 
     
     static boolean needsSanitization(Throwable t) {
+        if (t == null)
+            return false;
         
 //        try (PrintWriter out =  new PrintWriter(
 //                new FileWriter("/tmp/sanitationLog.txt", true))) {
         String s = t.getMessage();
-        if (s.isEmpty()) return false;
+        if (s == null || s.isEmpty()) return false;
 //        t.printStackTrace(out);
 //        out.println(s);
         
