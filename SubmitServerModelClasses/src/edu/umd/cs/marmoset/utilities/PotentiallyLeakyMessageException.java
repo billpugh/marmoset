@@ -46,7 +46,7 @@ public class PotentiallyLeakyMessageException extends SecurityException {
         if (nonSpaceWhiteSpace > 2) 
             return true;
 //        out.println("OK1");
-        if (numbers > 10)
+        if (numbers > 15)
             return true; 
 //        out.println("OK2");
         if (digitCharacters > s.length()/2)
