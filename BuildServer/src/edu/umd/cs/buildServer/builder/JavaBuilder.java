@@ -540,6 +540,7 @@ public class JavaBuilder extends Builder<JUnitTestProperties> implements TestPro
 	public static void appendJUnitToClassPath(StringBuffer buf) {
 		File f = getJUnitJar();
 		addFileToClasspath(buf, f);
+		addFileToClasspath(buf, getHamcrestJar());
 	}
 
 	public static void appendLibrariesToClassPath(StringBuffer buf) {
@@ -566,6 +567,9 @@ public class JavaBuilder extends Builder<JUnitTestProperties> implements TestPro
 	public static File getJUnitJar() {
 		return getCodeBase(TestCase.class);
 	}
+	public static File getHamcrestJar() {
+        return getCodeBase(org.hamcrest.Condition.class);
+    }
 	public static File getGuavaJar() {
         return getCodeBase(Strings.class);
     }

@@ -55,6 +55,10 @@ final class TrustedCodeBaseFinder {
 	    File junit = JavaBuilder.getCodeBase(TestCase.class);
 //	    tester.getLog().debug("junit at: " + junit);
 	    addTrustedCodeBase("buildserver.junit.jar.file", junit.getAbsolutePath());
+	    File hamcrest = JavaBuilder.getCodeBase(org.hamcrest.Condition.class);
+//	     tester.getLog().debug("hamcrest at: " + hamcrest);
+	    addTrustedCodeBase("buildserver.hamcrest.jar.file", hamcrest.getAbsolutePath());
+	       
 	    File buildserverRoot =tester.getDirectoryFinder().getBuildServerRoot();
 //        tester.getLog().debug("buildserver at: " + buildserverRoot);
         addTrustedCodeBase("buildserver.tester.codebase", buildserverRoot.getAbsolutePath());
