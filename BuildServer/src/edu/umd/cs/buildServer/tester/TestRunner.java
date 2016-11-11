@@ -180,7 +180,9 @@ public class TestRunner extends BaseTestRunner {
 	@Override
 	public void testFailed(int status, Test test, Throwable t) {
 	    
-	    t = PotentiallyLeakyMessageException.sanitize(t);
+	    if (currentTestOutcome.getTestType().equals(TestOutcome.TestType.PUBLIC)
+	          ||  currentTestOutcome.getTestType().equals(TestOutcome.TestType.RELEASE) )
+	        t = PotentiallyLeakyMessageException.sanitize(t);
 	    
 	    Throwable original = t;
 
@@ -219,7 +221,8 @@ public class TestRunner extends BaseTestRunner {
 		currentTestOutcome.setShortTestResult(t.toString()
 				+ formatShortExceptionMessage(t));
 		currentTestOutcome.setLongTestResult(toString(original));
-		currentTestOutcome.setExceptionClassName(t.getClass().getName());
+		String exceptionName = t.getClass().getName();
+        currentTestOutcome.setExceptionClassName(exceptionName);
 	}
 
 	/**
