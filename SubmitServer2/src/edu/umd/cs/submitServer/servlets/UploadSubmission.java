@@ -38,6 +38,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -78,11 +79,12 @@ public class UploadSubmission extends SubmitServerServlet {
 
   
     enum Kind {
-        UNKNOWN, SINGLE_FILE, MULTIFILE_UPLOAD, ZIP_UPLOAD, TAR_UPLOAD, ZIP_UPLOAD2, FIXED_ZIP_UPLOAD, CODEMIRROR
+        UNKNOWN, SINGLE_FILE, SPECIAL_ZIP_FILE, MULTIFILE_UPLOAD, ZIP_UPLOAD, TAR_UPLOAD, ZIP_UPLOAD2, FIXED_ZIP_UPLOAD, CODEMIRROR
     }
 
     private static Object UPLOAD_LOCK = new Object();
 
+    static final Pattern OfficeFileName = Pattern.compile(".*.(pptx|docx|.xlsx)");
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -144,8 +146,13 @@ public class UploadSubmission extends SubmitServerServlet {
                 byte[] bytesForUpload = fileItem.get();
                 String fileName = fileItem.getName();
 
+                 
+                boolean isSpecialSingleFile = OfficeFileName.matcher(fileName).matches();
+
+                
+                
                 FormatDescription desc = FormatIdentification.identify(bytesForUpload);
-                if (desc != null && desc.getMimeType().equals("application/zip")) {
+                if (!isSpecialSingleFile && desc != null && desc.getMimeType().equals("application/zip")) {
                     fixedZip = FixZip.hasProblem(bytesForUpload);
                     kind = Kind.ZIP_UPLOAD;
                     if (fixedZip) {
@@ -166,7 +173,7 @@ public class UploadSubmission extends SubmitServerServlet {
 
                     String mime = URLConnection.getFileNameMap().getContentTypeFor(fileName);
 
-                    if (mime == null)
+                    if (!isSpecialSingleFile && mime == null)
                         try {
                             MagicMatch match = Magic.getMagicMatch(bytesForUpload, true);
                             if (match != null)
@@ -175,7 +182,7 @@ public class UploadSubmission extends SubmitServerServlet {
                             // leave mime as null
                         }
 
-                    if ("application/zip".equalsIgnoreCase(mime)) {
+                    if (!isSpecialSingleFile && "application/zip".equalsIgnoreCase(mime)) {
                         zipOutput = bytesForUpload;
                         kind = Kind.ZIP_UPLOAD2;
                     } else {
@@ -187,7 +194,7 @@ public class UploadSubmission extends SubmitServerServlet {
                         ByteArrayOutputStream bos = new ByteArrayOutputStream();
                         ZipOutputStream zos = new ZipOutputStream(bos);
 
-                        if ("application/x-gzip".equalsIgnoreCase(mime) || "application/x-tar".equalsIgnoreCase(mime)) {
+                        if (!isSpecialSingleFile && ("application/x-gzip".equalsIgnoreCase(mime) || "application/x-tar".equalsIgnoreCase(mime))) {
 
                             kind = Kind.TAR_UPLOAD;
 
@@ -201,7 +208,10 @@ public class UploadSubmission extends SubmitServerServlet {
                             tins.close();
                         } else {
                             // Non-archive file type
-                            kind = Kind.SINGLE_FILE;
+                            if (isSpecialSingleFile)
+                              kind = Kind.SPECIAL_ZIP_FILE;
+                            else 
+                              kind = Kind.SINGLE_FILE;
                             // Write bytes to a zip file
                             ZipEntry zentry = new ZipEntry(fileName);
                             zos.putNextEntry(zentry);
