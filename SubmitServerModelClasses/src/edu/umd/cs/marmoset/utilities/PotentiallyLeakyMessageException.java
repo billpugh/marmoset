@@ -62,8 +62,8 @@ public class PotentiallyLeakyMessageException extends SecurityException {
     public static Throwable sanitize(Throwable original) {
         Throwable t = original;
         while (t != null) {
-            if (needsSanitization(t))
-                return new PotentiallyLeakyMessageException(t);
+            if (needsSanitization(t)) 
+                original = t = new PotentiallyLeakyMessageException(t);
             t = t.getCause();
         }
         return original;
@@ -73,8 +73,10 @@ public class PotentiallyLeakyMessageException extends SecurityException {
     
     
     private  PotentiallyLeakyMessageException(Throwable t) {
-        super(t.getClass().getSimpleName() + " which had potentially leaky message");
+        super(t.getClass().getSimpleName() + " which had potentially leaky message",
+                t.getCause());
         setStackTrace(t.getStackTrace());
+        
     }
     
 
