@@ -300,6 +300,8 @@ public class TextDiff extends StringsWriter {
         while (true) {
             Object o = getNextExpected0();
             if (o == null) return null;
+            if (options.containsKey(Option.IGNORE_BLANK_LINES) && o instanceof String && ((String) o).trim().isEmpty()) 
+                continue;
             if (!gotExpectedWaitFor) {
                 if (! isWhatWeAreWaitingFor((String) o))
                     continue;
@@ -383,10 +385,7 @@ public class TextDiff extends StringsWriter {
         boolean ignoreBlankLines = options.containsKey(Option.IGNORE_BLANK_LINES);
         if (ignoreBlankLines && txt.trim().isEmpty())
             return;
-        Object o;
-        do {
-            o = getNextExpected();
-        } while (ignoreBlankLines && o instanceof String && ((String) o).trim().isEmpty());
+        Object o= getNextExpected();
         expected = o;
         if (o == null) {
             fail(String.format("On line %d, expected no more output but saw '%s'", line, txt));
