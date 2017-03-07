@@ -45,7 +45,6 @@ public class Clover {
     public static void globalFlush() {
         if (!available) return;
         try {
-            System.out.println("Flushing clover data");
             cloverGlobalFlush.invoke(null);
         } catch (RuntimeException e) {
             throw e;
