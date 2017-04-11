@@ -869,6 +869,14 @@
     <filter-name>SubmitStatusFilter</filter-name>
     <url-pattern>/view/submitStatus.jsp</url-pattern>
   </filter-mapping>
+   <servlet>
+    <servlet-name>ClearPartner</servlet-name>
+    <servlet-class> edu.umd.cs.submitServer.servlets.ClearPartner </servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ClearPartner</servlet-name>
+    <url-pattern>action/instructor/ClearPartner</url-pattern>
+  </servlet-mapping>
   <servlet>
     <servlet-name>AnalyzeArchives</servlet-name>
     <servlet-class> edu.umd.cs.submitServer.servlets.AnalyzeArchives </servlet-class>
