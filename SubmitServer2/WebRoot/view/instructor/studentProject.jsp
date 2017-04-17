@@ -64,11 +64,9 @@
 </c:url>
 <p>Partnered with
 	<c:out value="${projectPartner.fullname}"/>
-	(<a href="${removePartnerLink}" class="confirm" 
-	title="Are you sure you want to remove their partner selection?">remove</a>)
-		
-	</p>
-
+	<form method="POST" action="${removePartnerLink}">
+	<input type="submit" value="Remove partner">
+</form></p>
 </c:if>
 
 <c:if test="${studentSubmitStatus.extension > 0}">
