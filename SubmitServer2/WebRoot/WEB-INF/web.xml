@@ -875,7 +875,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ClearPartner</servlet-name>
-    <url-pattern>action/instructor/ClearPartner</url-pattern>
+    <url-pattern>/action/instructor/ClearPartner</url-pattern>
   </servlet-mapping>
   <servlet>
     <servlet-name>AnalyzeArchives</servlet-name>
