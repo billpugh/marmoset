@@ -28,11 +28,8 @@
 			adaptable="true"
 			class="edu.umd.cs.eclipse.courseProjectManager.AutoCVSPropertyPage"
 			name="Course Project Management">
-			<!-- This property can only be set for CVS-managed projects. -->
-			<filter
-				name="projectPersistentProperty"
-				value="org.eclipse.team.core.repository=org.eclipse.team.cvs.core.cvsnature">
-			</filter>
+			<!-- Should filter to only include projects that have a .submit file -->
+			
 		</page>
 	</extension>
 	<extension
@@ -65,28 +62,12 @@
 	-->
 
 	<!-- The AutoSync nature marks projects as wanting CVS operations to run automatically. -->   
-	<extension
-		point="org.eclipse.core.resources.natures"
-		id="autoSyncNature"
-		name="Auto Sync via CVS">
-		<runtime>
-			<run class="edu.umd.cs.eclipse.courseProjectManager.AutoSyncNature"/>
-		</runtime>
-  <requires-nature id="edu.umd.cs.eclipse.courseProjectManager.autoCVSNature"/>
-	</extension>
  <extension
        id="autoCVSNature"
        name="autocvspluginextensionpoint"
        point="org.eclipse.core.resources.natures">
     <runtime>
        <run class="edu.umd.cs.eclipse.courseProjectManager.AutoCVSNature"/>
-    </runtime>
- </extension>
- <extension
-       id="autoRunLogNature"
-       point="org.eclipse.core.resources.natures">
-    <runtime>
-       <run class="edu.umd.cs.eclipse.courseProjectManager.AutoRunLogNature"/>
     </runtime>
  </extension>
  <extension

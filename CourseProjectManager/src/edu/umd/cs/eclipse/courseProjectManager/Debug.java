@@ -45,7 +45,8 @@ public class Debug {
 
 	static final boolean DEBUG = Boolean
 			.getBoolean("edu.umd.cs.eclipse.courseProjectManager.debug")
-			|| AutoCVSPlugin.getPlugin().isDebugging();
+			|| AutoCVSPlugin.getPlugin().isDebugging()
+			|| true;
 
 	static final boolean DEBUG_TIMING = DEBUG;
 
