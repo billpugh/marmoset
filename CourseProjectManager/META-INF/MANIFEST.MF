@@ -3,7 +3,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ManifestVersion: 2
 Bundle-Name: Course Project Manager Plug-in
 Bundle-SymbolicName: edu.umd.cs.eclipse.courseProjectManager; singleton:=true
-Bundle-Version: 0.3.0
+Bundle-Version: 0.3.1
 Bundle-Activator: edu.umd.cs.eclipse.courseProjectManager.AutoCVSPlugin
 Bundle-Vendor: University of Maryland
 Require-Bundle: org.eclipse.core.runtime,

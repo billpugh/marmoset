@@ -488,16 +488,18 @@ public class TurninProjectAction implements IObjectActionDelegate {
         try {
             IResource[] iResources = container.members();
 
-            for (IResource iR : iResources)
+            for (IResource iR : iResources) {
                 if (!ignoreFilter.matches(iR.getLocation().toString()))
                     switch (iR.getType()) {
                     case IResource.FOLDER:
                         IPath tempPath = iR.getLocation();
                         recursiveFindFiles(filesToSubmit, ignoreFilter, tempPath, myWorkspaceRoot, project);
-                        return;
+                        break;
                     case IResource.FILE:
                         filesToSubmit.add((IFile) iR);
+                        break;
                     }
+            }
 
         } catch (CoreException e) {
             // TODO Auto-generated catch block
