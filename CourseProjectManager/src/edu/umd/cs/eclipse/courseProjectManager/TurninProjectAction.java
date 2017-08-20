@@ -73,7 +73,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.team.core.TeamException;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -424,9 +423,8 @@ public class TurninProjectAction implements IObjectActionDelegate {
      * @param project
      * @param submitProjectFile
      * @return list of files that should be submitted
-     * @throws TeamException
      */
-    static Collection<IFile> findFilesForSubmission(IProject project) throws TeamException {
+    static Collection<IFile> findFilesForSubmission(IProject project)  {
         // TODO Do I really need to use ICVSFile? Can't I just go ahead and use
         // a regular
         // visitor for IResources?
