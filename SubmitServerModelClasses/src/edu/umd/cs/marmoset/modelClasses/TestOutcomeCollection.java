@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -65,7 +66,7 @@ import edu.umd.cs.marmoset.utilities.SqlUtilities;
  * @author jspacco
  */
 
-public class TestOutcomeCollection implements ITestSummary<TestOutcomeCollection>, Iterable<TestOutcome> {
+public class TestOutcomeCollection implements Serializable, ITestSummary<TestOutcomeCollection>, Iterable<TestOutcome> {
     private List<TestOutcome> testOutcomes = new ArrayList<TestOutcome>();
     private Map<String, TestOutcome> testMap = new HashMap<String, TestOutcome>();
     private boolean compileSuccessful = false;

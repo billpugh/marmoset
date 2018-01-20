@@ -25,6 +25,7 @@ package edu.umd.cs.marmoset.modelClasses;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,7 +42,7 @@ import edu.umd.cs.marmoset.utilities.Checksums;
  *
  * @author jspacco
  */
-public class CodeMetrics {
+public class CodeMetrics implements Serializable {
 	private int testRunPK; // non-NULL
 	private String md5sumSourcefiles;
 	private String md5sumClassfiles;

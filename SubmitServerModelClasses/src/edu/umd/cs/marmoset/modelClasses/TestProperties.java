@@ -36,6 +36,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,7 +58,7 @@ import edu.umd.cs.marmoset.utilities.FileNames;
  * @author David Hovemeyer
  * @author Jaime Spacco
  */
-public abstract class TestProperties {
+public abstract class TestProperties implements Serializable {
 
     public enum Framework {
         JUNIT, MAKE, SCRIPT;
@@ -93,6 +94,9 @@ public abstract class TestProperties {
         this.additionalSourceFileExtensions = additionalSourceFileExtensions;
     }
 
+
+
+    
     public static TestProperties load(ZipInputStream zipIn) throws IOException,
             MissingRequiredTestPropertyException {
         try {
@@ -135,7 +139,7 @@ public abstract class TestProperties {
      * @throws MissingRequiredTestPropertyException
      *             If any mandatory test properties are missing.
      */
-    private static TestProperties initializeTestProperties(InputStream is)
+    public static TestProperties initializeTestProperties(InputStream is)
             throws IOException, MissingRequiredTestPropertyException {
         Properties testProperties = new Properties();
 
