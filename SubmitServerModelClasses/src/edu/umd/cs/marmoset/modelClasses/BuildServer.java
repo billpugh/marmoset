@@ -1,5 +1,6 @@
 package edu.umd.cs.marmoset.modelClasses;
 
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,6 +31,12 @@ public class BuildServer implements Comparable<BuildServer> {
 	final TestRun.Kind kind;
 	@Project.PK final int lastRequestProjectPK;
 	@Course.PK final int lastRequestCoursePK;
+    private static SecureRandom rng = new SecureRandom();
+    protected static long nextRandomLong() {
+        synchronized (rng) {
+            return rng.nextLong();
+        }
+    }
 	public static final String TABLE_NAME = "buildservers";
 
 	static final String[] ATTRIBUTE_NAME_LIST = { "buildserver_pk", "name",
