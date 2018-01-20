@@ -29,9 +29,9 @@ package edu.umd.cs.buildServer.builder;
 import java.io.File;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import edu.umd.cs.buildServer.BuilderException;
+import edu.umd.cs.buildServer.ProjectSubmission;
+import edu.umd.cs.marmoset.modelClasses.TestProperties;
 import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
 /**
@@ -56,9 +56,8 @@ public class CSubmissionExtractor extends SubmissionExtractor {
 	 *            the buildserver's Log
 	 * @throws BuilderException
 	 */
-	public CSubmissionExtractor(File zipFile, File directory,
-			Logger buildServerLog) throws ZipExtractorException {
-		super(zipFile, directory, buildServerLog);
+	public CSubmissionExtractor(ProjectSubmission<? extends TestProperties> submission, File directory) throws ZipExtractorException {
+		super(submission, directory);
 	}
 
 	/*

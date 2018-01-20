@@ -34,6 +34,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import edu.umd.cs.buildServer.BuilderException;
+import edu.umd.cs.buildServer.ProjectSubmission;
+import edu.umd.cs.marmoset.modelClasses.TestProperties;
 import edu.umd.cs.marmoset.utilities.ZipExtractor;
 import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
@@ -62,18 +64,34 @@ public abstract class SubmissionExtractor extends ZipExtractor {
 	 *            BuildServer's Log
 	 * @throws BuilderException
 	 */
-	public SubmissionExtractor(File zipFile, File directory,
-			Logger buildServerLog) throws ZipExtractorException {
-		super(zipFile);
-		this.projectRoot = "";
-		this.directory = directory;
-		this.log = buildServerLog;
-		this.sourceFileList = new LinkedList<String>();
-		this.prunedSourceFileList = false;
+	public SubmissionExtractor(ProjectSubmission<? extends TestProperties> submission, File directory) throws ZipExtractorException {
+		this(submission.getZipFile(), directory, submission.getLog());
 	}
 
 	
-	File getDirectory() {
+	/**
+     * Constructor.
+     * 
+     * @param zipFile
+     *            the submission zipfile
+     * @param directory
+     *            directory to extract the submission into
+     * @param buildServerLog
+     *            BuildServer's Log
+	 * @throws ZipExtractorException 
+     * @throws BuilderException
+     */
+	public SubmissionExtractor(File zipFile, File directory, Logger buildServerLog) throws ZipExtractorException {
+	    super(zipFile);
+        this.projectRoot = "";
+        this.directory = directory;
+        this.log = buildServerLog;
+        this.sourceFileList = new LinkedList<String>();
+        this.prunedSourceFileList = false;
+    }
+
+
+    File getDirectory() {
 	    return directory;
 	}
 	/**
@@ -109,7 +127,7 @@ public abstract class SubmissionExtractor extends ZipExtractor {
 	}
 
 	@Override
-	protected boolean shouldExtract(String entryName) {
+	public boolean shouldExtract(String entryName) {
 		// FIXME: we really should report an error if
 		// an entry doesn't begin with the project root
 		return entryName.startsWith(projectRoot);

@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.security.SecureRandom;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.io.IOUtils;
@@ -76,6 +75,7 @@ public class BuildServerTestHarness extends BuildServer {
 	 */
 	@Override
 	public void initConfig() throws IOException {
+	    super.initConfig();
 		if (System.getenv("PMD_HOME") != null)
 			getConfig().setProperty(PMD_HOME, System.getenv("PMD_HOME"));
 		getConfig().setProperty(LOG_DIRECTORY, "console");
@@ -103,13 +103,6 @@ public class BuildServerTestHarness extends BuildServer {
 		if ("true".equals(performCodeCoverage))
 			getConfig().setProperty(CODE_COVERAGE, "true");
 
-		// TODO move the location of the Clover DB to the build directory.
-		// NOTE: This requires changing the security.policy since Clover needs
-		// to be able
-		// to read, write and create files in the directory.
-		String cloverDBPath = "/tmp/myclover.db."
-				+ Long.toHexString(nextRandomLong());
-		getConfig().setProperty(CLOVER_DB, cloverDBPath);
 	}
 
 	/*
@@ -250,13 +243,7 @@ public class BuildServerTestHarness extends BuildServer {
 		getBuildServerLog().trace("Done.");
 	}
 
-	private static SecureRandom rng = new SecureRandom();
-
-	private static long nextRandomLong() {
-		synchronized (rng) {
-			return rng.nextLong();
-		}
-	}
+	
 
 	@Override
 	public int getNumServerLoopIterations() {

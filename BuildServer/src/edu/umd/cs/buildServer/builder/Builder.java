@@ -42,7 +42,6 @@ import edu.umd.cs.buildServer.ConfigurationKeys;
 import edu.umd.cs.buildServer.ProjectSubmission;
 import edu.umd.cs.marmoset.modelClasses.CodeMetrics;
 import edu.umd.cs.marmoset.modelClasses.TestProperties;
-import edu.umd.cs.marmoset.utilities.ZipExtractor;
 import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
 /**
@@ -218,11 +217,7 @@ public abstract class Builder<T extends TestProperties> implements Configuration
 	 * @throws IOException
 	 */
 	protected void extractTestFiles() throws IOException, ZipExtractorException {
-	    ZipExtractor extractor = new ZipExtractor(
-				projectSubmission.getTestSetup());
-		extractor.extract(directoryFinder.getTestFilesDirectory());
-		filesExtractedFromTestSetup = extractor
-				.getEntriesExtractedFromZipArchive();
+	    filesExtractedFromTestSetup = projectSubmission.extractAllFromTestSetup(directoryFinder.getTestFilesDirectory());
 	}
 
 	/**

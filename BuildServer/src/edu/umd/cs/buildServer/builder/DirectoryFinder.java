@@ -27,6 +27,7 @@
 package edu.umd.cs.buildServer.builder;
 
 import java.io.File;
+import java.io.Serializable;
 
 import edu.umd.cs.buildServer.BuildServerConfiguration;
 import edu.umd.cs.buildServer.ConfigurationKeys;
@@ -39,7 +40,7 @@ import edu.umd.cs.buildServer.MissingConfigurationPropertyException;
  * 
  * @author David Hovemeyer
  */
-public abstract class DirectoryFinder implements ConfigurationKeys {
+public abstract class DirectoryFinder implements Serializable, ConfigurationKeys {
 	protected File buildServerRoot;
 
 	protected DirectoryFinder(BuildServerConfiguration config)

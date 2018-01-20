@@ -30,6 +30,7 @@ import static edu.umd.cs.buildServer.ConfigurationKeys.RUN_STUDENT_TESTS;
 import static edu.umd.cs.buildServer.ConfigurationKeys.SKIP_TESTS;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -45,7 +46,6 @@ import edu.umd.cs.buildServer.inspection.ISubmissionInspectionStep;
 import edu.umd.cs.buildServer.tester.Tester;
 import edu.umd.cs.buildServer.util.BuildServerUtilities;
 import edu.umd.cs.marmoset.modelClasses.TestProperties;
-import edu.umd.cs.marmoset.utilities.TestPropertiesExtractor;
 import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
 /**
@@ -53,11 +53,11 @@ import edu.umd.cs.marmoset.utilities.ZipExtractorException;
  * 
  * @author David Hovemeyer
  */
-public abstract class BuilderAndTesterFactory<T extends TestProperties> {
+public abstract class BuilderAndTesterFactory<T extends TestProperties> implements Serializable {
     protected final ProjectSubmission<T> projectSubmission;
 	protected final DirectoryFinder directoryFinder;
 	protected final T testProperties;
-	protected final Logger log;
+	protected final transient Logger log;
 	protected boolean downloadOnly = false;
 	protected Logger getLog() {
 	    return log;
@@ -91,8 +91,7 @@ public abstract class BuilderAndTesterFactory<T extends TestProperties> {
 	public abstract Tester<? super T> createTester()
 			throws MissingConfigurationPropertyException;
 	
-    public void buildAndTest(File buildDirectory,
-            TestPropertiesExtractor testPropertiesExtractor)
+    public void buildAndTest(File buildDirectory)
             throws BuilderException, MissingConfigurationPropertyException,
             CompileFailureException {
         // Build the submission

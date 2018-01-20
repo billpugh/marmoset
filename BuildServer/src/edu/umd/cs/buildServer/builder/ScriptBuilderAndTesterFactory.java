@@ -60,8 +60,8 @@ public class ScriptBuilderAndTesterFactory extends BuilderAndTesterFactory<Scrip
 			throws BuilderException, MissingConfigurationPropertyException,
 			ZipExtractorException {
 		CSubmissionExtractor submissionExtractor = new CSubmissionExtractor(
-				projectSubmission.getZipFile(),
-				directoryFinder.getBuildDirectory(), projectSubmission.getLog());
+				projectSubmission,
+				directoryFinder.getBuildDirectory());
 
 		ScriptBuilder builder = new ScriptBuilder(testProperties, projectSubmission,
 				directoryFinder, submissionExtractor);

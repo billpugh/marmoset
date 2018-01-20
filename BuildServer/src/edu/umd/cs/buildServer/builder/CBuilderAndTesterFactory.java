@@ -60,8 +60,8 @@ public class CBuilderAndTesterFactory extends BuilderAndTesterFactory<MakeTestPr
 			throws BuilderException, MissingConfigurationPropertyException,
 			ZipExtractorException {
 		CSubmissionExtractor submissionExtractor = new CSubmissionExtractor(
-				projectSubmission.getZipFile(),
-				directoryFinder.getBuildDirectory(), projectSubmission.getLog());
+				projectSubmission,
+				directoryFinder.getBuildDirectory());
 
 		CBuilder builder = new CBuilder(testProperties, projectSubmission,
 				directoryFinder, submissionExtractor);

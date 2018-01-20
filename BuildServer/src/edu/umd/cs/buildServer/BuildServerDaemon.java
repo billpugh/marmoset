@@ -32,11 +32,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.net.ConnectException;
-import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
@@ -64,6 +62,7 @@ import edu.umd.cs.buildServer.util.DevNullOutputStream;
 import edu.umd.cs.buildServer.util.IO;
 import edu.umd.cs.buildServer.util.ServletAppender;
 import edu.umd.cs.marmoset.modelClasses.HttpHeaders;
+import edu.umd.cs.marmoset.modelClasses.MissingRequiredTestPropertyException;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome;
 import edu.umd.cs.marmoset.modelClasses.TestOutcomeCollection;
 import edu.umd.cs.marmoset.modelClasses.TestProperties;
@@ -129,13 +128,12 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 	 */
 	@Override
 	public void initConfig() throws IOException {
+	    super.initConfig();
 		// TODO: Verify that all the important parameters are set, and FAIL
 		// EARLY is necessary
 		// TODO: Make getter methods in Config for the required params
 		// (build.directory, test.files.directory, etc)
-        InputStream defaultConfig = BuildServerDaemon.class
-                .getResourceAsStream("defaultConfig.properties");
-        getConfig().load(defaultConfig);
+       
         if (configFile == null) {
             File root = BuildServerConfiguration
                     .getBuildServerRootFromCodeSource();
@@ -157,22 +155,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
         getConfig().load(
                 new BufferedInputStream(new FileInputStream(configFile)));
 
-		// I'm setting the clover binary database in this method rather than in
-		// the config.properties file because it always goes into /tmp and I
-		// need
-		// a unique name in case there are multiple buildServers on the same
-		// host
-
-		// TODO move the location of the Clover DB to the build directory.
-		// NOTE: This requires changing the security.policy since Clover needs
-		// to be able
-		// to read, write and create files in the directory.
-		//
-		// String cloverDBPath =
-		// getConfig().getRequiredProperty(BUILD_DIRECTORY) +"/myclover.db";
-		String cloverDBPath = "/tmp/myclover.db."
-				+ Long.toHexString(nextRandomLong());
-		getConfig().setProperty(CLOVER_DB, cloverDBPath);
+		
 	}
 
 	private String getWelcomeURL(){
@@ -470,7 +453,7 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 	@Override
 	protected void downloadProjectJarFile(ProjectSubmission<?> projectSubmission)
 			throws MissingConfigurationPropertyException, HttpException,
-			IOException, BuilderException {
+			IOException, BuilderException, MissingRequiredTestPropertyException {
 		// FIXME: We should cache these
 
 		MultipartPostMethod method = new MultipartPostMethod(
@@ -491,7 +474,10 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 			}
 
 			getLog().trace("Downloading test setup file");
-			IO.download(projectSubmission.getTestSetup(), method);
+			if (!projectSubmission.downloadTestSetup(method.getResponseBodyAsStream())) {
+			    System.out.println("Didn't find test properties");
+			}
+			
 
 			// We're passing the project_jarfile_pk so we don't need to read it
 			// from
@@ -926,14 +912,6 @@ public class BuildServerDaemon extends BuildServer implements ConfigurationKeys 
 		}, "force shutdown thread");
 		t.setDaemon(true);
 		t.start();
-	}
-
-	private static SecureRandom rng = new SecureRandom();
-
-	private static long nextRandomLong() {
-		synchronized (rng) {
-			return rng.nextLong();
-		}
 	}
 
 

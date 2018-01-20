@@ -59,7 +59,7 @@ public class LimitedInputStream extends InputStream {
 
 	@Override
 	public int read() throws IOException {
-		byte[] buf = new byte[0];
+		byte[] buf = new byte[1];
 		for (;;) {
 			int n = read(buf, 0, 1);
 			if (n < 0)

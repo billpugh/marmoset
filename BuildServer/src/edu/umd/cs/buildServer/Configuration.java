@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -45,7 +46,7 @@ import javax.annotation.WillClose;
  * 
  * @author David Hovemeyer
  */
-public class Configuration {
+public class Configuration implements Serializable {
 	private static final boolean DEBUG = Boolean
 			.getBoolean("buildServer.config.debug");
 	private static final Pattern SUBST_PATTERN = Pattern

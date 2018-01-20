@@ -45,6 +45,8 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
 import edu.umd.cs.buildServer.BuilderException;
+import edu.umd.cs.buildServer.ProjectSubmission;
+import edu.umd.cs.marmoset.modelClasses.JUnitTestProperties;
 import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
 /**
@@ -60,6 +62,24 @@ public class JavaSubmissionExtractor extends SubmissionExtractor {
 	private String classpathFile; // Eclipse .classpath file
 	private List<Pattern> excludedSourceFileList;
 
+	 /**
+     * Constructor.
+     * 
+     * @param zipFile
+     *            the submission zipfile
+     * @param directory
+     *            directory to extract the submission into
+     * @param buildServerLog
+     *            the buildserver's Log
+     * @throws BuilderException
+     */
+    public JavaSubmissionExtractor(File zipFile, File directory,
+            Logger buildServerLog) throws ZipExtractorException {
+        super(zipFile, directory, buildServerLog);
+        this.classpathFile = null;
+        this.excludedSourceFileList = new LinkedList<Pattern>();
+    }
+    
 	/**
 	 * Constructor.
 	 * 
@@ -71,9 +91,9 @@ public class JavaSubmissionExtractor extends SubmissionExtractor {
 	 *            the buildserver's Log
 	 * @throws BuilderException
 	 */
-	public JavaSubmissionExtractor(File zipFile, File directory,
-			Logger buildServerLog) throws ZipExtractorException {
-		super(zipFile, directory, buildServerLog);
+	public JavaSubmissionExtractor(ProjectSubmission<JUnitTestProperties> submission,  File directory) 
+	        throws ZipExtractorException {
+		super(submission, directory);
 		this.classpathFile = null;
 		this.excludedSourceFileList = new LinkedList<Pattern>();
 	}
@@ -291,7 +311,7 @@ public class JavaSubmissionExtractor extends SubmissionExtractor {
 	}
 
 	@Override
-	protected boolean shouldExtract(String entryName) {
+	public boolean shouldExtract(String entryName) {
 		if (entryName.contains(".clover"))
 			return false;
 		return super.shouldExtract(entryName);

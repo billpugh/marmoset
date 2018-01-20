@@ -164,11 +164,11 @@ public class BuildServerConfiguration implements BuildServerConfigurationMBean {
 
 		// Semester and course
 		setSupportedCourses(config
-				.getRequiredProperty(ConfigurationKeys.SUPPORTED_COURSE_LIST));
+				.getOptionalProperty(ConfigurationKeys.SUPPORTED_COURSE_LIST));
 
 		// Protocol, hostname, port and password
 		setSubmitServerURL(config
-				.getRequiredProperty(ConfigurationKeys.SUBMIT_SERVER_URL));
+				.getOptionalProperty(ConfigurationKeys.SUBMIT_SERVER_URL));
 		  
 		setHostname(getLocalHostName(config, logger));
 		
@@ -425,6 +425,7 @@ public class BuildServerConfiguration implements BuildServerConfigurationMBean {
 	 */
 	@Override
 	public void setSupportedCourses(String supportedCourses) {
+	    if (supportedCourses == null) return;
 		supportedCourseList = new LinkedList<String>();
 		this.supportedCourses = supportedCourses;
 		StringTokenizer tokenizer = new StringTokenizer(supportedCourses);

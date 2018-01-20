@@ -42,7 +42,7 @@ import edu.umd.cs.marmoset.utilities.ZipExtractorException;
  * 
  * @author David Hovemeyer
  */
-public class JavaBuilderAndTesterFactory extends BuilderAndTesterFactory<JUnitTestProperties> {
+public class JavaBuilderAndTesterFactory extends BuilderAndTesterFactory<JUnitTestProperties>  {
 
 
 	public JavaBuilderAndTesterFactory(
@@ -76,7 +76,7 @@ public class JavaBuilderAndTesterFactory extends BuilderAndTesterFactory<JUnitTe
 
 		builder.addExpectedFile(projectSubmission.getZipFile().getName());
 		builder.addExpectedFile(projectSubmission.getTestSetup().getName());
-		builder.addExpectedFile("test.properties");
+		
 		builder.addExpectedFile("security.policy");
 
 		return builder;

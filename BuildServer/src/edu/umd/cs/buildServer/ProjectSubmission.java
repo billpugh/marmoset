@@ -26,29 +26,40 @@
  */
 package edu.umd.cs.buildServer;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.io.CopyUtils;
 import org.apache.log4j.Logger;
 
+import edu.umd.cs.buildServer.BuildServer.RequestStatus;
 import edu.umd.cs.buildServer.builder.BuilderAndTesterFactory;
 import edu.umd.cs.buildServer.builder.CBuilderAndTesterFactory;
 import edu.umd.cs.buildServer.builder.JavaBuilderAndTesterFactory;
 import edu.umd.cs.buildServer.builder.ScriptBuilderAndTesterFactory;
-import edu.umd.cs.buildServer.util.IO;
 import edu.umd.cs.marmoset.modelClasses.CodeMetrics;
 import edu.umd.cs.marmoset.modelClasses.JUnitTestProperties;
 import edu.umd.cs.marmoset.modelClasses.MakeTestProperties;
+import edu.umd.cs.marmoset.modelClasses.MissingRequiredTestPropertyException;
 import edu.umd.cs.marmoset.modelClasses.ScriptTestProperties;
 import edu.umd.cs.marmoset.modelClasses.TestOutcomeCollection;
 import edu.umd.cs.marmoset.modelClasses.TestProperties;
 import edu.umd.cs.marmoset.modelClasses.TestPropertyKeys;
+import edu.umd.cs.marmoset.utilities.ZipExtractor;
 
 /**
  * A project submission to be compiled and tested. This object stores all of the
@@ -57,13 +68,28 @@ import edu.umd.cs.marmoset.modelClasses.TestPropertyKeys;
  *
  * @author David Hovemeyer
  */
-public class ProjectSubmission<T extends TestProperties> implements ConfigurationKeys, TestPropertyKeys {
-	private final BuildServerConfiguration config;
-	private final Logger log;
+public class ProjectSubmission<T extends TestProperties> implements Serializable, ConfigurationKeys, TestPropertyKeys {
+	
+    private static SecureRandom random = new SecureRandom();
+    public static long nextRandomLong() {
+        synchronized (random) {
+            return random.nextLong();
+        }
+    }
+    private final long randomId = nextRandomLong();
+    private transient BuildServerConfiguration config;
+	private transient Logger log;
 	private final String submissionPK;
 	private final String testSetupPK;
 	private final String isNewTestSetup;
 	private final String isBackgroundRetest;
+	
+	
+	/** Called only after ProjectSubmission is read via object serialization */
+	public void restore(BuildServerConfiguration config, Logger log) {
+	    this.config = config;
+	    this.log = log;
+	}
 	/**
 	 * Auxiliary information about the source to be built, such as an md5sum of
 	 * the classfiles and/or the names of student-written tests. So far we don't
@@ -74,14 +100,18 @@ public class ProjectSubmission<T extends TestProperties> implements Configuratio
 	private File zipFile;
 	private File testSetup;
 	
+	private byte[] testSetupBytes;
+	private TreeSet<String> testSetupFiles = new TreeSet<String>();
+	
 	private int testDurationMillis;
 
 	private final TestOutcomeCollection testOutcomeCollection;
 
-	private HttpMethod method;
+	private transient HttpMethod method;
 	private T testProperties;
 	private BuilderAndTesterFactory<T> builderAndTesterFactory;
 	private final String kind;
+	private RequestStatus requestStatus = RequestStatus.IN_PROGRESS;
 
 	/**
 	 * Constructor.
@@ -186,18 +216,85 @@ public class ProjectSubmission<T extends TestProperties> implements Configuratio
 	
     public Set<String> getFilesInSubmission() throws IOException {
         HashSet<String> result = new HashSet<String>();
-        ZipFile z = null;
-        try {
-            z = new ZipFile(getZipFile());
-            Enumeration<? extends ZipEntry> e = z.entries();
-            while (e.hasMoreElements()) {
-                ZipEntry entry = e.nextElement();
+        
+        try (ZipInputStream z = new ZipInputStream(new FileInputStream(getZipFile()))) {
+            while (true) {
+                ZipEntry entry = z.getNextEntry();
+                if (entry == null) break;
                 result.add(entry.getName());
             }
-        } finally {
-            IO.closeSilently(z);
         }
         return result;
+    }
+    
+    public boolean downloadTestSetup(InputStream source) throws IOException, MissingRequiredTestPropertyException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (BufferedInputStream in = new BufferedInputStream(source)) {
+            CopyUtils.copy(in, out);
+        }
+        testSetupBytes = out.toByteArray();
+        testSetupFiles = new TreeSet<String>();
+        
+        try (ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(testSetupBytes))) {
+            while (true) {
+                ZipEntry entry = z.getNextEntry();
+                if (entry == null) break;
+                String name = entry.getName();
+                testSetupFiles.add(name);
+                if (name.equals("test.properties")) {
+                    testProperties = (T) TestProperties.initializeTestProperties(z);
+                    
+                    
+                }
+                    
+            }
+        }
+        return testProperties != null;
+        
+    }
+    
+    public boolean extractFromTestSetup(File directory, String name) throws IOException {
+        try (ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(testSetupBytes))) {
+            while (true) {
+                ZipEntry entry = z.getNextEntry();
+                if (entry == null) break;
+                String thisName = entry.getName();
+                if (thisName.equals(name)) {
+                    try (FileOutputStream os = new FileOutputStream(new File(directory, name))) {
+                      CopyUtils.copy(z, os);
+                       os.close();
+                       return true;
+                    }
+                }   
+            }
+        }
+        return false;     
+    }
+    
+    public Set<String> extractAllFromTestSetup(File directory) throws IOException {
+        ZipExtractor extractor = new ZipExtractor( zipFile);
+        Set<String> extracted = new TreeSet<String>();
+        try (ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(testSetupBytes))) {
+            while (true) {
+                ZipEntry entry = z.getNextEntry();
+                if (entry == null) break;
+                String thisName = entry.getName();
+                if (!thisName.equals("test.properties") 
+                    && extractor.shouldExtract(thisName)) {
+                    extracted.add(thisName);
+                    
+                    File file = new File(directory, thisName);
+                    if (thisName.endsWith("/")) 
+                      file.mkdir();
+                    else try (FileOutputStream os = new FileOutputStream(file)) {
+                      CopyUtils.copy(z, os);
+                    }
+                }   
+            }
+        }
+        return extracted;
+   
+        
     }
 	/**
 	 * Get the File storing the project jar file.
@@ -230,15 +327,6 @@ public class ProjectSubmission<T extends TestProperties> implements Configuratio
 		return method;
 	}
 
-	/**
-	 * Set the TestProperties.
-	 *
-	 * @param testProperties
-	 *            the TestProperties
-	 */
-	public void setTestProperties(T testProperties) {
-		this.testProperties = testProperties;
-	}
 
 	/**
 	 * Get the TestProperties.
@@ -344,4 +432,17 @@ public class ProjectSubmission<T extends TestProperties> implements Configuratio
 	public void setZipFile(File zipFile) {
 		this.zipFile = zipFile;
 	}
+
+    public RequestStatus getRequestStatus() {
+        return requestStatus;
+    }
+
+    public void setRequestStatus(RequestStatus requestStatus) {
+        this.requestStatus = requestStatus;
+    }
+
+    public void validateRandomId(ProjectSubmission<T> other) {
+        if (this.randomId != other.randomId) 
+            throw new RuntimeException("Can't validated project submission random id");
+    }
 }

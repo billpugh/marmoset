@@ -28,13 +28,16 @@ package edu.umd.cs.buildServer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
@@ -42,6 +45,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -61,14 +65,13 @@ import edu.umd.cs.buildServer.builder.BuilderAndTesterFactory;
 import edu.umd.cs.buildServer.util.LoadAverage;
 import edu.umd.cs.buildServer.util.ServletAppender;
 import edu.umd.cs.buildServer.util.jni.ProcessKiller;
+import edu.umd.cs.marmoset.modelClasses.MissingRequiredTestPropertyException;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.OutcomeType;
 import edu.umd.cs.marmoset.modelClasses.TestOutcome.TestType;
 import edu.umd.cs.marmoset.modelClasses.TestProperties;
 import edu.umd.cs.marmoset.utilities.MarmosetUtilities;
 import edu.umd.cs.marmoset.utilities.SystemInfo;
-import edu.umd.cs.marmoset.utilities.TestPropertiesExtractor;
-import edu.umd.cs.marmoset.utilities.ZipExtractorException;
 
 /**
  * A BuildServer obtains a project submission zipfile and a project jarfile,
@@ -95,7 +98,7 @@ public abstract class BuildServer implements ConfigurationKeys {
 	private static final String LOG4J_CONSOLE_CONFIG = "edu/umd/cs/buildServer/log4j-console.properties";
 
 	// Status codes from doOneRequest()
-	static enum RequestStatus { NO_WORK, SUCCESS, COMPILE_FAILURE, BUILD_FAILURE, ERROR };
+	static enum RequestStatus { NO_WORK, SUCCESS, COMPILE_FAILURE, BUILD_FAILURE, ERROR, IN_PROGRESS };
 
 
 	/**
@@ -128,6 +131,13 @@ public abstract class BuildServer implements ConfigurationKeys {
 	
 	private boolean deletedPidFile = false;
 
+	private static SecureRandom rng = new SecureRandom();
+
+    protected static long nextRandomLong() {
+        synchronized (rng) {
+            return rng.nextLong();
+        }
+    }
 	/**
 	 * Constructor.
 	 */
@@ -217,7 +227,27 @@ public abstract class BuildServer implements ConfigurationKeys {
 	 *            the Properties object containing the configuration
 	 * @throws IOException
 	 */
-	public abstract void initConfig() throws IOException;
+	public @OverridingMethodsMustInvokeSuper void initConfig() throws IOException {
+	    InputStream defaultConfig = BuildServerDaemon.class
+                .getResourceAsStream("defaultConfig.properties");
+        getConfig().load(defaultConfig);
+	    // I'm setting the clover binary database in this method rather than in
+        // the config.properties file because it always goes into /tmp and I
+        // need
+        // a unique name in case there are multiple buildServers on the same
+        // host
+
+        // TODO move the location of the Clover DB to the build directory.
+        // NOTE: This requires changing the security.policy since Clover needs
+        // to be able
+        // to read, write and create files in the directory.
+        //
+        // String cloverDBPath =
+        // getConfig().getRequiredProperty(BUILD_DIRECTORY) +"/myclover.db";
+	    String cloverDBPath = "/tmp/myclover.db."
+                + Long.toHexString(nextRandomLong());
+        getConfig().setProperty(CLOVER_DB, cloverDBPath);
+	}
 
 	protected void configureBuildServerForMBeanManagement() {
 		buildServerConfiguration = new BuildServerConfiguration();
@@ -269,21 +299,9 @@ public abstract class BuildServer implements ConfigurationKeys {
 	 * @throws SecurityException
 	 */
 	public void executeServerLoop() throws Exception {
-	    configureBuildServerForMBeanManagement();
-        if (alreadyRunning())
-          	return;
+	    okToStart();
         try {
-        markPid();
-		createWorkingDirectories();
-		this.log = createLog(getBuildServerConfiguration(), useServletAppender());
-		log.info("BuildServer starting with pid " + MarmosetUtilities.getPid());
-
-		{String load = SystemInfo.getSystemLoad();
-		if (!SystemInfo.isGood(load))
-			log.warn(load);
-		}
-		
-		prepareToExecute();
+        initialize();
 
 		String supportedCourseList = getBuildServerConfiguration().getSupportedCourses();
 		getLog().debug(
@@ -346,6 +364,26 @@ public abstract class BuildServer implements ConfigurationKeys {
             clearMyPidFile();
 		}
 	}
+
+    protected void initialize() throws Exception, MissingConfigurationPropertyException, IOException {
+        markPid();
+		createWorkingDirectories();
+		this.log = createLog(getBuildServerConfiguration(), useServletAppender());
+		log.info("BuildServer starting with pid " + MarmosetUtilities.getPid());
+
+		{String load = SystemInfo.getSystemLoad();
+		if (!SystemInfo.isGood(load))
+			log.warn(load);
+		}
+		
+		prepareToExecute();
+    }
+
+    protected boolean okToStart() throws Exception {
+        configureBuildServerForMBeanManagement();
+        return ! alreadyRunning();
+          	
+    }
 
 	/**
 	 * Called before each iteration of the server loop to determine whether or
@@ -511,6 +549,7 @@ public abstract class BuildServer implements ConfigurationKeys {
 		return logger;
 	}
 
+	
     /**
      * Get a single project from the submit server, and try to build and test
      * it.
@@ -519,8 +558,9 @@ public abstract class BuildServer implements ConfigurationKeys {
      *         we downloaded, built, and tested a project successfully,
      *         COMPILE_ERROR if the project failed to compile, BUILD_ERROR if
      *         the project could not be built due to an internal error
+     * @throws MissingRequiredTestPropertyException 
      */
-    private RequestStatus doOneRequest() throws MissingConfigurationPropertyException {
+    private RequestStatus doOneRequest() throws MissingConfigurationPropertyException, MissingRequiredTestPropertyException {
 
         ProjectSubmission<?> projectSubmission = null;
         try {
@@ -530,15 +570,14 @@ public abstract class BuildServer implements ConfigurationKeys {
                 return RequestStatus.NO_WORK;
 
             long start = System.currentTimeMillis();
-            RequestStatus result;
+            
             try {
-            	log.trace("Build configuration");
-            	log.trace(getConfig());
+                cleanWorkingDirectories();
+                log.trace("Build configuration");
+                log.trace(getConfig());
                 if (getConfig().getBooleanProperty(DEBUG_SKIP_DOWNLOAD)) {
                     log.warn("Skipping download");
                 } else {
-                    cleanWorkingDirectories();
-
                     log.trace("About to download project");
 
                     // Read the zip file from the response stream.
@@ -556,80 +595,17 @@ public abstract class BuildServer implements ConfigurationKeys {
                     downloadProjectJarFile(projectSubmission);
                     // log.warn
                 }
-               
-
-                log.trace("starting build and test");
-                long started = System.currentTimeMillis();
-                // Now we have the project and the testing jarfile.
-                // Build and test it.
-                try {
-                    buildAndTestProject(projectSubmission);
-
-                    if (getDownloadOnly()) 
-                    	return RequestStatus.NO_WORK;
-                    // Building and testing was successful.
-                    // ProjectSubmission should have had its public, release,
-                    // secret and student
-                    // TestOutcomes added.
-                    addBuildTestResult(projectSubmission, TestOutcome.PASSED,
-                            "", started);
-                    result = RequestStatus.SUCCESS;
-                } catch (BuilderException e) {
-                    // treat as compile error
-                    getLog().info(
-                            "Submission " + projectSubmission.getSubmissionPK()
-                                    + " for test setup "
-                                    + projectSubmission.getTestSetupPK()
-                                    + " did not build", e);
-
-                    // Add build test outcome
-                    String compilerOutput = "Building threw builder exception: " + toString(e);
-
-                    getLog().warn(
-                            "Marking all classes of tests 'could_not_run' for "
-                                    + projectSubmission.getSubmissionPK()
-                                    + " and test-setup "
-                                    + projectSubmission.getTestSetupPK());
-                    
-                    buildFailed(projectSubmission, started, compilerOutput);
-
-                    result = RequestStatus.COMPILE_FAILURE;
-                } catch (CompileFailureException e) {
-                    // If we couldn't compile, report special testOutcome
-                    // stating this fact
-                    log.info(
-                            "Submission " + projectSubmission.getSubmissionPK()
-                                    + " did not compile", e);
-
-                    // Add build test outcome
-                    String compilerOutput = e.toString() + "\n"
-                            + e.getCompilerOutput();
-                    buildFailed(projectSubmission, started, compilerOutput);
-
-                    result = RequestStatus.COMPILE_FAILURE;
-
-                } catch (Throwable e) {
-                    // Got a throwable
-                    log.info(
-                            "Submission " + projectSubmission.getSubmissionPK()
-                                    + " threw unexpected exception", e);
-
-                    // Add build test outcome
-                    String compilerOutput = "Building threw unexpected exception: " + toString(e);
-                    buildFailed(projectSubmission, started, compilerOutput);
-
-                    result = RequestStatus.ERROR;
-                }
             } finally {
-                // Make sure the zip file is cleaned up.
-                if (!getConfig().getDebugProperty(
-                        DEBUG_PRESERVE_SUBMISSION_ZIPFILES)
-                        && !projectSubmission.getZipFile().delete()) {
-                    log.error("Could not delete submission zipfile "
-                            + projectSubmission.getZipFile());
-                }
+                
+            } 
+            try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream("/tmp/projectSubmission"))) {
+                oo.writeObject(projectSubmission);
             }
-
+             
+            buildAndTest(projectSubmission);
+            try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream("/tmp/testResults"))) {
+                oo.writeObject(projectSubmission);
+            }
             writeToCurrentFile("Testing completed ");
             // Send the test results back to the submit server
             long total = System.currentTimeMillis() - start;
@@ -639,9 +615,11 @@ public abstract class BuildServer implements ConfigurationKeys {
                 log.error("submissionPK %d took %d millisecons to process");
             else
                 projectSubmission.setTestDurationMillis((int) total);
-            reportTestResults(projectSubmission);
+            
+            if (projectSubmission.getRequestStatus() != RequestStatus.NO_WORK)
+              reportTestResults(projectSubmission);
 
-             return result;
+             return projectSubmission.getRequestStatus();
 
         } catch (HttpException e) {
             log.error("Internal error: BuildServer got HttpException", e);
@@ -663,6 +641,89 @@ public abstract class BuildServer implements ConfigurationKeys {
                 releaseConnection(projectSubmission);
             }
             getCurrentFile().delete();
+        }
+    }
+
+    protected void buildAndTest(ProjectSubmission<?> projectSubmission) {
+        try {
+           
+
+            log.trace("starting build and test");
+            long started = System.currentTimeMillis();
+            // Now we have the project and the testing jarfile.
+            // Build and test it.
+            try {
+
+
+                
+                buildAndTestProject(projectSubmission);
+
+                if (getDownloadOnly()) {
+                	projectSubmission.setRequestStatus(RequestStatus.NO_WORK);
+                	return;
+                }
+                // Building and testing was successful.
+                // ProjectSubmission should have had its public, release,
+                // secret and student
+                // TestOutcomes added.
+                addBuildTestResult(projectSubmission, TestOutcome.PASSED,
+                        "", started);
+                projectSubmission.setRequestStatus(  RequestStatus.SUCCESS);
+                return;
+            } catch (BuilderException e) {
+                // treat as compile error
+                getLog().info(
+                        "Submission " + projectSubmission.getSubmissionPK()
+                                + " for test setup "
+                                + projectSubmission.getTestSetupPK()
+                                + " did not build", e);
+
+                // Add build test outcome
+                String compilerOutput = "Building threw builder exception: " + toString(e);
+
+                getLog().warn(
+                        "Marking all classes of tests 'could_not_run' for "
+                                + projectSubmission.getSubmissionPK()
+                                + " and test-setup "
+                                + projectSubmission.getTestSetupPK());
+                
+                buildFailed(projectSubmission, started, compilerOutput);
+
+                projectSubmission.setRequestStatus(  RequestStatus.COMPILE_FAILURE); return;
+            } catch (CompileFailureException e) {
+                // If we couldn't compile, report special testOutcome
+                // stating this fact
+                log.info(
+                        "Submission " + projectSubmission.getSubmissionPK()
+                                + " did not compile", e);
+
+                // Add build test outcome
+                String compilerOutput = e.toString() + "\n"
+                        + e.getCompilerOutput();
+                buildFailed(projectSubmission, started, compilerOutput);
+
+                projectSubmission.setRequestStatus(  RequestStatus.COMPILE_FAILURE); return;
+
+            } catch (Throwable e) {
+                // Got a throwable
+                log.info(
+                        "Submission " + projectSubmission.getSubmissionPK()
+                                + " threw unexpected exception", e);
+
+                // Add build test outcome
+                String compilerOutput = "Building threw unexpected exception: " + toString(e);
+                buildFailed(projectSubmission, started, compilerOutput);
+
+                projectSubmission.setRequestStatus(  RequestStatus.ERROR); return;
+            }
+        } finally {
+            // Make sure the zip file is cleaned up.
+            if (false && !getConfig().getDebugProperty(
+                    DEBUG_PRESERVE_SUBMISSION_ZIPFILES)
+                    && !projectSubmission.getZipFile().delete()) {
+                log.error("Could not delete submission zipfile "
+                        + projectSubmission.getZipFile());
+            }
         }
     }
     
@@ -696,9 +757,14 @@ public abstract class BuildServer implements ConfigurationKeys {
 	 * commence building an testing a submission.
 	 *
 	 * @throws MissingConfigurationPropertyException
+	 * @throws IOException 
 	 */
 	private void cleanWorkingDirectories()
-			throws MissingConfigurationPropertyException {
+			throws MissingConfigurationPropertyException, IOException {
+	    File dir = getBuildServerConfiguration().getBuildServerRoot();
+	    dir.setExecutable(true,true);
+	    dir.setReadable(true,true);
+	    dir.setWritable(true,true);
 		cleanUpDirectory(getBuildServerConfiguration().getBuildDirectory());
 		cleanUpDirectory(getBuildServerConfiguration().getTestFilesDirectory());
 	}
@@ -744,11 +810,12 @@ public abstract class BuildServer implements ConfigurationKeys {
 	 * @throws HttpException
 	 * @throws IOException
 	 * @throws BuilderException
+	 * @throws MissingRequiredTestPropertyException 
 	 */
 	protected abstract void downloadProjectJarFile(
 			ProjectSubmission<?> projectSubmission)
 			throws MissingConfigurationPropertyException, HttpException,
-			IOException, BuilderException;
+			IOException, BuilderException, MissingRequiredTestPropertyException;
 
 	/**
 	 * Report test outcomes for a submission to the submit server.
@@ -838,38 +905,9 @@ public abstract class BuildServer implements ConfigurationKeys {
 		// Need to differentiate between problems with test-setup and bugs in my
 		// servers
 		File buildDirectory = getBuildServerConfiguration().getBuildDirectory();
-
-		// Extract test properties and security policy files into build
-		// directory
-		TestPropertiesExtractor testPropertiesExtractor = null;
-		try {
-			testPropertiesExtractor = new TestPropertiesExtractor(
-					projectSubmission.getTestSetup());
-			testPropertiesExtractor.extract(buildDirectory);
-		} catch (ZipExtractorException e) {
-			throw new BuilderException(e);
-		}
-
-        // We absolutely have to have test.properties
-        if (!testPropertiesExtractor.extractedTestProperties())
-            throw new BuilderException(
-                    "Test setup did not contain test.properties");
-
-        T testProperties;
-        try {
-            // Load test.properties
-            File testPropertiesFile = new File(buildDirectory,
-                    "test.properties");
-            testProperties = (T) TestProperties.load(testPropertiesFile);
-        } catch (Exception e) {
-            throw new BuilderException(e.getMessage(), e);
-        }
-
-		// Set test properties in the ProjectSubmission.
-        projectSubmission.setTestProperties(testProperties);
-
+		
 		// validate required files
-		Set<String> requiredFiles = testProperties.getRequiredFiles();
+		Set<String> requiredFiles = projectSubmission.getTestProperties().getRequiredFiles();
 		Set<String> providedFiles = projectSubmission.getFilesInSubmission();
 		
 		requiredFiles.removeAll(providedFiles);
@@ -893,7 +931,7 @@ public abstract class BuildServer implements ConfigurationKeys {
         	 log.error("Download only; skipping build and test");
         	 builderAndTesterFactory.setDownloadOnly();
         } 
-		builderAndTesterFactory.buildAndTest(buildDirectory, testPropertiesExtractor);
+		builderAndTesterFactory.buildAndTest(buildDirectory);
 	}
 
  
@@ -902,16 +940,22 @@ public abstract class BuildServer implements ConfigurationKeys {
 	 *
 	 * @param dir
 	 *            the directory
+	 * @throws IOException 
 	 */
-	protected static void cleanUpDirectory(File dir) {
-		if (dir.isDirectory()) {
+	protected static void cleanUpDirectory(File dir) throws IOException {
+	    if (!dir.isDirectory()) 
+	        throw new IOException("Not a directory: " + dir);
+
+	    dir.setReadable(true, true);
+	    dir.setWritable(true,true);
+	    dir.setExecutable(true, true);
 			File[] contents = dir.listFiles();
 			if (contents != null) {
 				for (int i = 0; i < contents.length; ++i) {
 					deleteRecursive(contents[i]);
 				}
 			}
-		}
+		
 	}
 
 	/**
@@ -922,7 +966,12 @@ public abstract class BuildServer implements ConfigurationKeys {
 	 *            the file or directory to delete
 	 */
 	private static void deleteRecursive(File file) {
+	    file.setReadable(true, true);
+        file.setWritable(true,true);
+        
 		if (file.isDirectory()) {
+		    file.setExecutable(true, true);
+	        
 			File[] contents = file.listFiles();
 			if (contents != null) {
 				for (int i = 0; i < contents.length; ++i)
@@ -1126,8 +1175,8 @@ public abstract class BuildServer implements ConfigurationKeys {
 		String user = System.getProperty("user.name");
 	
 		Process p = b.start();
-		try {
-		Scanner s = new Scanner(p.getInputStream());
+		try (Scanner s = new Scanner(p.getInputStream())) {
+		
 		String header = s.nextLine();
 		// log.trace("ps header: " + header);
 		while (s.hasNext()) {
@@ -1144,7 +1193,6 @@ public abstract class BuildServer implements ConfigurationKeys {
 				return true;
 			} 
 		}
-		s.close();
 		} finally {
 		    p.destroy();
 		}
