@@ -18,12 +18,13 @@ and src/ directories at the root of the archive.
 so don't worry if your submission includes them.
 </div>
 
-<div id="uploadSource" style="display: none">
+<div id="submittingSource" style="display: none">
 <h2>Submitting multiple text files</h2>
-<p>You can also submit multiple files, typically all source files.
-If the files need to be in a particularly directory structure, then all of the submitted
-files need to be ones in the baseline submission, otherwise we can't recreate the intended directory
-structure. 
+<p>You can submit multiple files, typically all source files. Just choose multiple files before clicking "Submit project!". 
+<c:if test="${instructorCapability}">       
+<p><em>Instructor note:</em> The system will try to put the files into the directory structure of the baseline submission.
+</c:if>    
+
 </div>
 
 <script>
