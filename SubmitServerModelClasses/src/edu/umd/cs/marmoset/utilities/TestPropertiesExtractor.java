@@ -42,7 +42,7 @@ public class TestPropertiesExtractor extends ZipExtractor {
 	 * @see edu.umd.cs.buildServer.ZipExtractor#shouldExtract(java.lang.String)
 	 */
 	@Override
-	protected boolean shouldExtract(String entryName) {
+	public boolean shouldExtract(String entryName) {
 		return entryName.equals("test.properties") || entryName.equals("security.policy");
 	}
 

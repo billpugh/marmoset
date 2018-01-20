@@ -189,7 +189,7 @@ public class ZipExtractor {
 	 * @param entryName name of the entry
 	 * @return true if the entry should be extracted, false if not
 	 */
-	protected boolean shouldExtract(String entryName) {
+	public boolean shouldExtract(String entryName) {
 		return true;
 	}
 
