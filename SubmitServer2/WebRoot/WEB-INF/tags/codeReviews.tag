@@ -148,19 +148,32 @@
                     <c:param name="codeReviewerPK"
                         value="${codeReviewSummary.codeReviewerPK}" />
                 </c:url>
+				<c:choose>
+					<c:when test="${codeReviewSummary.project.tested}">
+					    <c:set var="detailsName" value="Tests"/>
+						<c:url var="detailsLink" value="/view/submission.jsp">
+							<c:param name="submissionPK"
+								value="${codeReviewSummary.submissionPK}" />
+							<c:param name="codeReviewerPK"
+								value="${codeReviewSummary.codeReviewerPK}" />
+						</c:url>
+					</c:when>
+					<c:otherwise>
+					    <c:set var="detailsName" value="Download"/>
+						<c:url var="detailsLink" value="/data/DownloadSubmission">
+							<c:param name="submissionPK"
+								value="${codeReviewSummary.submissionPK}" />
+							<c:param name="codeReviewerPK"
+								value="${codeReviewSummary.codeReviewerPK}" />
+						</c:url>
+					</c:otherwise>
+				</c:choose>
 
-				<c:url var="detailsLink" value="/view/submission.jsp">
-					<c:param name="submissionPK"
-						value="${codeReviewSummary.submissionPK}" />
-					<c:param name="codeReviewerPK"
-						value="${codeReviewSummary.codeReviewerPK}" />
-				</c:url>
-
-            <tr class="r${counter.index % 2}" title="${codeReviewSummary.description}">
+				<tr class="r${counter.index % 2}" title="${codeReviewSummary.description}">
 
 					<td><a href="${gwtCodeReviewLink}" target="codeReview">View</a>
 
-					<td><a href="${detailsLink}">Tests</a>
+					<td><a href="${detailsLink}"><c:out value="${detailsName}"/></a>
 
 					<c:if test="${empty project}">
 						<td><c:out value="${codeReviewSummary.project.projectNumber}" /></td>
@@ -242,19 +255,33 @@
 						value="${codeReviewSummary.codeReviewerPK}" />
 				</c:url>
 
-				<c:url var="detailsLink" value="/view/submission.jsp">
-					<c:param name="submissionPK"
-						value="${codeReviewSummary.submissionPK}" />
-					<c:param name="codeReviewerPK"
-						value="${codeReviewSummary.codeReviewerPK}" />
-				</c:url>
+				<c:choose>
+					<c:when test="${codeReviewSummary.project.tested}">
+					    <c:set var="detailsName" value="Tests"/>
+						<c:url var="detailsLink" value="/view/submission.jsp">
+							<c:param name="submissionPK"
+								value="${codeReviewSummary.submissionPK}" />
+							<c:param name="codeReviewerPK"
+								value="${codeReviewSummary.codeReviewerPK}" />
+						</c:url>
+					</c:when>
+					<c:otherwise>
+					    <c:set var="detailsName" value="Download"/>
+						<c:url var="detailsLink" value="/data/DownloadSubmission">
+							<c:param name="submissionPK"
+								value="${codeReviewSummary.submissionPK}" />
+							<c:param name="codeReviewerPK"
+								value="${codeReviewSummary.codeReviewerPK}" />
+						</c:url>
+					</c:otherwise>
+				</c:choose>
 
 
 			 <tr class="r${counter.index % 2}" title="${codeReviewSummary.description}">
     
 
 					<td><a href="${gwtCodeReviewLink}" target="codeReview">View</a>
-					<td><a href="${detailsLink}">Tests</a>
+					<td><a href="${detailsLink}"><c:out value="${detailsName}"/></a>
 
 					<c:if test="${empty project}">
 						<td><c:out value="${codeReviewSummary.project.projectNumber}" /></td>
