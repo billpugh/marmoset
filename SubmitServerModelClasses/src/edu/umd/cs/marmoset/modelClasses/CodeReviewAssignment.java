@@ -249,25 +249,34 @@ public class CodeReviewAssignment {
 	
 	
 	public void delete(Connection conn) throws SQLException {
-		int activeReviewers = CodeReviewer.numActiveReviewers(conn, this);
-		if (activeReviewers > 0)
-			throw new IllegalStateException("Can't delete code review with active reviewers");
-		CodeReviewer.deleteInactiveReviewers(conn, this);
-		String tables = Rubric.TABLE_NAME + "," + RubricEvaluation.TABLE_NAME;
+	String rubricTables = Rubric.TABLE_NAME + "," + RubricEvaluation.TABLE_NAME;
 
-		executeDeeleteCodeReviewAssignment(conn, "DELETE " + tables + " FROM " + tables  
+		executeDeleteCodeReviewAssignment(conn, "DELETE " + rubricTables + " FROM " + rubricTables  
 				+ " WHERE code_review_assignment_pk = ? "
-				+ " AND " + Rubric.TABLE_NAME+"rubic_pk = "
-				+ RubricEvaluation.TABLE_NAME+"rubic_pk");	
+				+ " AND " + Rubric.TABLE_NAME+".rubic_pk = "
+				+ RubricEvaluation.TABLE_NAME+".rubic_pk");	
+		
+		String commentTables = CodeReviewComment.TABLE_NAME + "," + CodeReviewThread.TABLE_NAME
+		    +"," + CodeReviewer.TABLE_NAME;
 
-		executeDeeleteCodeReviewAssignment(conn, "DELETE FROM " + Rubric.TABLE_NAME
-				 + " WHERE code_review_assignment_pk = ?");
+		executeDeleteCodeReviewAssignment(conn, "DELETE " + commentTables + " FROM " + commentTables  
+        + " WHERE code_review_assignment_pk = ? "
+        + " AND " + CodeReviewComment.TABLE_NAME+".code_review_thread_pk = "
+        + CodeReviewThread.TABLE_NAME+".code_review_thread_pk"
+            + "AND " + CodeReviewComment.TABLE_NAME+".code_reviewer_pk = " +
+             CodeReviewer.TABLE_NAME+".code_reviewer_pk"); 
+  
+		executeDeleteCodeReviewAssignment(conn, "DELETE FROM " + Rubric.TABLE_NAME
+        + " WHERE code_review_assignment_pk = ?");
 
-		executeDeeleteCodeReviewAssignment(conn, "DELETE FROM " + CodeReviewAssignment.TABLE_NAME
+		executeDeleteCodeReviewAssignment(conn, "DELETE FROM " + CodeReviewer.TABLE_NAME
+        + " WHERE code_review_assignment_pk = ?");
+ 
+		executeDeleteCodeReviewAssignment(conn, "DELETE FROM " + CodeReviewAssignment.TABLE_NAME
 				+ " WHERE code_review_assignment_pk = ?");
 		
 	}
-	private void executeDeeleteCodeReviewAssignment(Connection conn, String cmd)
+	private void executeDeleteCodeReviewAssignment(Connection conn, String cmd)
 			throws SQLException {
 		PreparedStatement stmt = conn.prepareStatement(cmd);
 		try {
