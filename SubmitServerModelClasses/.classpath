@@ -8,6 +8,7 @@
 	<classpathentry kind="lib" path="lib/jsr305.jar"/>
 	<classpathentry kind="lib" path="lib/guava-11.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/annotations.jar"/>
+	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="src" path="junit"/>
 	<classpathentry kind="lib" path="lib/dom4j-full.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io.jar" sourcepath="/export/home/jspacco/software/commons-io-1.1-src/src/java"/>
