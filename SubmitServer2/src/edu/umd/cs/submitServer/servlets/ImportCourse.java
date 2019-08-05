@@ -210,10 +210,6 @@ public class ImportCourse extends GradeServerInterfaceServlet {
 					continue studentLoop;
 				}
 
-
-			if ((updatePictures || ! s.getHasPicture()) &&  active && SyncStudents.loadStudentPicture(s, gradesConn, conn))
-				s.update(conn);
-
 			StudentRegistration registration = StudentRegistration
 					.lookupByStudentPKAndCoursePK(s.getStudentPK(),
 							course.getCoursePK(), conn);

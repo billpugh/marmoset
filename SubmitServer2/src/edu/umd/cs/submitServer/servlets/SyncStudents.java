@@ -133,29 +133,10 @@ public class SyncStudents extends GradeServerInterfaceServlet {
 
     }
 
+    @Deprecated 
     public static boolean loadStudentPicture(Student student,
             Connection gradesConn, Connection conn) throws SQLException {
-        String query = "SELECT type, image" + " FROM photos "
-                + " WHERE uid = ? LIMIT 1";
-
-        PreparedStatement stmt = gradesConn.prepareStatement(query);
-        stmt.setString(1, student.getCampusUID());
-        try {
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String type = rs.getString(1);
-                Blob blob = rs.getBlob(2);
-                StudentPicture.insertOrUpdate(conn, student, type, blob);
-                student.setHasPicture(true);
-                rs.close();
-                stmt.close();
-                return true;
-            }
-            rs.close();
-            return false;
-        } finally {
-            stmt.close();
-        }
+        return false;
 
     }
 
