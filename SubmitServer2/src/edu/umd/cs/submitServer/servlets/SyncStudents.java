@@ -43,101 +43,106 @@ import edu.umd.cs.marmoset.modelClasses.StudentPicture;
 
 public class SyncStudents extends GradeServerInterfaceServlet {
 
-	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		Connection gradesConn = null;
-		Connection conn = null;
-		response.setContentType("text/plain");
-		
-		try {
-			conn = getConnection();
-			gradesConn = getGradesConnection();
-			PrintWriter writer = response.getWriter();
-			if (true) {
-			    int counter = 0;
-				Map<Integer, Student> allStudents = Student.lookupAll(conn);
-				for (Student student : allStudents.values()) {
-				  if (student.isNormalAccount()) {
-				    syncStudent(writer, student, gradesConn, conn);
-				    counter++;
-				    if (counter % 40 == 0)
-				      writer.flush();
-				    }
-				}
-			}
-			writer.flush();
-			if (true) {
-				Collection<Course> courses = Course.lookupAll(conn);
-				for (Course c : courses) {
-					String courseIds = c.getCourseIDs();
-					if (courseIds == null || courseIds.length() == 0)
-						continue;
-					for (String courseId : courseIds.split(",")) {
-						ImportCourse.importStudents(writer, c.getSemester(),
-								c, Integer.parseInt(courseId), false, gradesConn, conn);
-						writer.flush();
-					}
-					
-				}
-			}
-			writer.println("Synchronization complete");
+    Connection gradesConn = null;
+    Connection conn = null;
+    response.setContentType("text/plain");
 
-		} catch (SQLException e) {
-			throw new ServletException(e);
-		} finally {
-			releaseConnection(conn);
-			releaseGradesConnection(gradesConn);
-		}
-
-	}
-
-    private void syncStudent(PrintWriter writer, Student student,
-            Connection gradesConn, Connection conn) throws SQLException {
-        {
-            String query = "SELECT lastName, firstName, nickname, directoryID, email"
-
-                    + " FROM submitexport " + " WHERE uid = ? LIMIT 1";
-            PreparedStatement stmt = gradesConn.prepareStatement(query);
-            stmt.setString(1, student.getCampusUID());
-
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                int col = 1;
-                String lastname = rs.getString(col++);
-                String firstname = rs.getString(col++);
-                String nickname = rs.getString(col++);
-
-                firstname = ImportCourse.getEffectiveFirstname(firstname,
-                        nickname);
-
-                String loginName = rs.getString(col++);
-                String email = rs.getString(col++);
-
-                boolean updated = false;
-                
-                updated |= student.setLastname(lastname);
-                updated |= student.setFirstname(firstname);
-                updated |= student.setEmail(email);
-                updated |= student.setLoginName(loginName);
-                if (updated) 
-                    writer.printf("Updated %s %s%n", firstname, lastname);
-                
-            }
-            rs.close();
-
-            stmt.close();
+    try {
+      conn = getConnection();
+      gradesConn = getGradesConnection();
+      PrintWriter writer = response.getWriter();
+      if (true) {
+        int counter = 0;
+        Map<Integer, Student> allStudents = Student.lookupAll(conn);
+        for (Student student : allStudents.values()) {
+          if (student.isNormalAccount()) {
+            syncStudent(writer, student, gradesConn, conn);
+            counter++;
+            if (counter % 40 == 0)
+              writer.flush();
+          }
         }
+      }
+      writer.flush();
+      if (true) {
+        Collection<Course> courses = Course.lookupAll(conn);
+        for (Course c : courses) {
+          String courseIds = c.getCourseIDs();
+          if (courseIds == null || courseIds.length() == 0)
+            continue;
+          for (String courseId : courseIds.split(",")) {
+            ImportCourse.importStudents(writer, c.getSemester(), c, Integer.parseInt(courseId), false, gradesConn,
+                conn);
+            writer.flush();
+          }
 
+        }
+      }
+      writer.println("Synchronization complete");
+
+    } catch (SQLException e) {
+      throw new ServletException(e);
+    } finally {
+      releaseConnection(conn);
+      releaseGradesConnection(gradesConn);
     }
 
-    @Deprecated 
-    public static boolean loadStudentPicture(Student student,
-            Connection gradesConn, Connection conn) throws SQLException {
-        return false;
+  }
 
+  private void syncStudent(PrintWriter writer, Student student, Connection gradesConn, Connection conn)
+      throws SQLException {
+    {
+      String query = "SELECT lastName, firstName, nickname, directoryID, email"
+
+          + " FROM submitexport " + " WHERE uid = ? LIMIT 1";
+      PreparedStatement stmt = gradesConn.prepareStatement(query);
+      stmt.setString(1, student.getCampusUID());
+
+      ResultSet rs = stmt.executeQuery();
+
+      if (rs.next()) {
+        int col = 1;
+        String lastname = rs.getString(col++);
+        String firstname = rs.getString(col++);
+        String nickname = rs.getString(col++);
+
+        firstname = ImportCourse.getEffectiveFirstname(firstname, nickname);
+
+        String loginName = rs.getString(col++);
+        String email = rs.getString(col++);
+
+        if (loginName == null) {
+          writer.printf("Got null loginName for %s %s - %s %s%n", firstname, lastname, student.getCampusUID(),
+              student.getLoginName());
+
+        } else {
+
+          boolean updated = false;
+
+          updated |= student.setLastname(lastname);
+          updated |= student.setFirstname(firstname);
+          updated |= student.setEmail(email);
+          updated |= student.setLoginName(loginName);
+          if (updated)
+            writer.printf("Updated %s %s%n", firstname, lastname);
+
+        }
+      }
+      rs.close();
+
+      stmt.close();
     }
+
+  }
+
+  @Deprecated
+  public static boolean loadStudentPicture(Student student, Connection gradesConn, Connection conn)
+      throws SQLException {
+    return false;
+
+  }
 
 }
