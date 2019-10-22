@@ -153,7 +153,7 @@ public class NegotiateOneTimePassword extends SubmitServerServlet {
             boolean skipAuthentication = "true".equals(webProperties.getProperty(SKIP_AUTHENTICATION));
            
             // authenticate the student and find their Student record
-            student = PerformLogin.authenticateStudent(conn, loginName, password, skipAuthentication, getIAuthenticationService());
+            student = PerformLogin.authenticateStudent(conn, loginName, password, skipAuthentication, getIAuthenticationService(true));
 
             // I need to do my own logging here-- AccessLogFilter cannot be
             // applied
