@@ -37,7 +37,7 @@ public class OpenIdRegistrationFilter extends SubmitServerFilter {
 	    Student student = Student.lookupByCampusUID(uid, conn);
 	    if (student != null) {
 	    	// Login user and redirect.
-	    	PerformLogin.setUserSession(((HttpServletRequest) req).getSession(), student, conn);
+	    	PerformLogin.setUserSession(((HttpServletRequest) req).getSession(), student, false, conn);
 		    ((HttpServletResponse) resp).sendRedirect(Util.urlDecode(target));
 		    return;
 	    }
