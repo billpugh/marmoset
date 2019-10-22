@@ -36,17 +36,31 @@
 
   <ss:loginTitle/>
 
-
+<!-- 
 <c:url var="loginLink" value="/authenticate/InitializeDatabase"/>
 <form id="PerformLogin" method="post" action="${loginLink}" >
 
   <table class="form" width="%30">
     <tr><th colspan=2>Initialize the submit server; provide your Directory ID</th></tr>
-    <tr><td class="label">Directory ID:</td><td class="input"> <input type="text" name="loginName" autofocus autocorrect="off" autocapitalize="off"/></td></tr>
-    <tr><td class="label"></td><td class="submit"><input type="submit" value="Login" name="Login"/></td></tr>
+    <tr><td class="label">Directory ID:</td><td class="input"> <input type="text" name="loginName"  autocorrect="off" autocapitalize="off"/></td></tr>
+  </table>
+</form>
+ -->
+
+	
+<c:url var="loginLink" value="/authenticate/cas/InitializeDatabase"/>
+<form id="PerformLogin" method="get" action="${loginLink}" >
+
+  <table class="form" width="%30">
+    <tr><th colspan=2>Initialize the submit server; your directory id will be provided by CAS</th></tr>
+    <tr><td class="label">Campus UUID:</td><td class="input"> <input type="text" name="campusUUID" inputmode="numeric" autofocus /></td></tr>
+   <tr><td class="label">First name:</td><td class="input"> <input type="text" name="firstName"  autocorrect="off" /></td></tr>
+   <tr><td class="label">Last name:</td><td class="input"> <input type="text" name="lastName"  autocorrect="off" /></td></tr>
+   <tr><td class="label"></td><td class="submit"><input type="submit" value="Login" name="Login"/></td></tr>
 
   </table>
 </form>
+
 
   <ss:footer/>
   </body>
