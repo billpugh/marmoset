@@ -10,12 +10,10 @@
 	<!-- Start CAS configuration -->
 	<context-param>
 		<param-name>serverName</param-name>
-	
+		<!--
 		<param-value>http://localhost:8080</param-value>
-		 
-			<!--
-			<param-value>https://submit.cs.umd.edu</param-value>
-			 -->
+		-->
+		<param-value>https://submit.cs.umd.edu</param-value>
 	</context-param>
 	<!-- https://secure.identity.ucsb.edu/inside/doku.php/sso_java -->
 	<!-- CAS Single Sign Out Filter -->
