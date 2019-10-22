@@ -123,7 +123,7 @@ public class Dialogs {
 			}
 		} else {
 			status = new Status(IStatus.ERROR, AutoCVSPlugin.getPlugin()
-					.getDescriptor().getUniqueIdentifier(), 0, // TODO: need a
+					.getBundle().getSymbolicName(), 0, // TODO: need a
 																// code here?
 					message, e);
 		}
