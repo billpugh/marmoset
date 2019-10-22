@@ -114,14 +114,13 @@ public class SyncStudents extends GradeServerInterfaceServlet {
         String loginName = rs.getString(col++);
         String email = rs.getString(col++);
 
-        if (loginName == null) {
-          writer.printf("Got null loginName for %s %s - %s %s%n", firstname, lastname, student.getCampusUID(),
-              student.getLoginName());
+        if (lastname == null || firstname == null || loginName == null || email == null) {
+          writer.printf("Got null value for %s %s (%s) %s %s, email %s%n", firstname, lastname, student.getCampusUID(),
+              student.getLoginName(), email);
 
         } else {
 
           boolean updated = false;
-
           updated |= student.setLastname(lastname);
           updated |= student.setFirstname(firstname);
           updated |= student.setEmail(email);
