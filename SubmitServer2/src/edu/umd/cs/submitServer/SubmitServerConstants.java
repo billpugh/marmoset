@@ -43,7 +43,9 @@ public interface SubmitServerConstants {
 	// SSL enviroment setup keys -- need to explicitly specify cacerts path
 	public static final String AUTHENTICATION_KEYSTORE_PATH = "authentication.keystore.path";
 	public static final String AUTHENTICATION_KEYSTORE_PASSWORD = "authentication.keystore.password";
-	public static final String LDAP_SSL_OFF = "authentication.ldap.SSL.disable";
+	public static final String AUTHENTICATION_TRUSTSTORE_PATH = "authentication.truststore.path";
+  public static final String AUTHENTICATION_TRUSTSTORE_PASSWORD = "authentication.truststore.password";
+  public static final String LDAP_SSL_OFF = "authentication.ldap.SSL.disable";
 
 	// Keys for various LDAP-related parameters
 	public static final String LDAP_URL = "authentication.ldap.provider_url";

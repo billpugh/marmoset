@@ -2,11 +2,15 @@ package edu.umd.cs.submitServer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -49,12 +53,45 @@ public final class WebConfigProperties {
 		useSSL(keyStore, keyPass);
 	}
 
+	private void testSSL() {
+
+      try {
+          SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+          SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket("www.cs.umd.edu", 443);
+
+          SSLParameters sslparams = new SSLParameters();
+          sslparams.setEndpointIdentificationAlgorithm("HTTPS");
+          sslsocket.setSSLParameters(sslparams);
+
+          InputStream in = sslsocket.getInputStream();
+          OutputStream out = sslsocket.getOutputStream();
+
+          // Write a test byte to get a reaction :)
+          out.write(1);
+
+          while (in.available() > 0) {
+              System.out.print(in.read());
+          }
+          System.out.println("Successfully connected");
+
+      } catch (Exception exception) {
+          exception.printStackTrace();
+      }
+  }
+
 	private void useSSL(String cacertsFile, String cacertsPassword) {
-		if (cacertsFile != null)
+		if (cacertsFile != null) {
+		  System.out.println("Setting trustStore to " +cacertsFile );
 			System.setProperty("javax.net.ssl.trustStore", cacertsFile);
-		if (cacertsPassword != null)
+		}
+		if (cacertsPassword != null) {
+		  System.out.println("Setting trustStore password to " +cacertsPassword );
+      
 			System.setProperty("javax.net.ssl.trustStorePassword",
 					cacertsPassword);
+		}
+		testSSL();
+		  
 	}
 	
 	@CheckForNull
