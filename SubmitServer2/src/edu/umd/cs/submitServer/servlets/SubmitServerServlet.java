@@ -272,12 +272,13 @@ public abstract class SubmitServerServlet extends HttpServlet implements
 	 * <p>
 	 * The IAuthenticationService object is lazily initialized and so it's
 	 * possible that some errors that might not be caught at init() time
+	 * @param overrideAuthCheck TODO
 	 *
 	 * @return The concrete implementation of IAuthenticationService used by
 	 *         this web application for authentication.
 	 * @throws ServletException
 	 */
-	protected synchronized ILDAPAuthenticationService getIAuthenticationService()
+	protected synchronized ILDAPAuthenticationService getIAuthenticationService(boolean overrideAuthCheck)
 			throws ServletException {
 		// Return cached copy if we've already loaded it
 	    
@@ -285,7 +286,7 @@ public abstract class SubmitServerServlet extends HttpServlet implements
 			return authenticationService;
 		
 		String authenticationType = webProperties.getRequiredProperty(AUTHENTICATION_TYPE);
-		if (!authenticationType.equals("ldap"))
+		if (!overrideAuthCheck && !authenticationType.equals("ldap"))
 		    throw new IllegalStateException("Authentication service only available for ldap authentication");
 		
 
