@@ -73,7 +73,7 @@ public class StudentAccountForInstructor extends SubmitServerServlet {
       session.invalidate();
       session = request.getSession(true);
 
-      PerformLogin.setUserSession(session, student2, conn);
+      PerformLogin.setUserSession(session, student2, false, conn);
 
       response.sendRedirect(redirectUrl);
     } catch (SQLException e) {
