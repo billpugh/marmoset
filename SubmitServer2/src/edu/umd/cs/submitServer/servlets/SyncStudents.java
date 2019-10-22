@@ -66,7 +66,7 @@ public class SyncStudents extends GradeServerInterfaceServlet {
           }
         }
       }
-      writer.println("Synchronized all students");
+      writer.println("synchronized all students");
       writer.println();
       writer.flush();
       if (true) {
