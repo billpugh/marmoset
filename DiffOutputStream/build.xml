@@ -1,10 +1,18 @@
 <project name="diffOutputStream" default="jarFile" basedir=".">
 
 	<property name="jar.name" value="diffOutputStream.jar" />
+        <path id="diffOutputStream.classpath">
+                <pathelement location="lib/junit-4.12.jar"/>
+        </path>
 
 	<target name="jarFile" depends="clean">
 		<javac destdir="bin" srcdir="src" includeantruntime="true"
-			deprecation="off" debug="on" />
+                        source="1.8"
+                        target="1.8"
+			deprecation="off" debug="on">
+
+			<classpath refid="diffOutputStream.classpath"/>
+ 		</javac>
 
 		<jar destfile="${jar.name}">
 			<fileset dir="bin" />
