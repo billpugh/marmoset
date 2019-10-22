@@ -105,7 +105,7 @@ public class PerformLogin extends SubmitServerServlet {
 			// [NAT P001]
 			Student student = authenticateStudent(conn, campusUID, uidPassword,
 					superUserLogin || skipAuthentication,
-					getIAuthenticationService());
+					getIAuthenticationService(false));
 			// [end NAT P001]
 
 			if (superUserLogin) {
@@ -117,7 +117,7 @@ public class PerformLogin extends SubmitServerServlet {
 			}
 
 			// Sets required information in the user's session.
-			setUserSession(session, student, conn);
+			setUserSession(session, student, false, conn);
 
 			// check to see if user tried to view a page before logging in
 			String target = parser.getOptionalCheckedParameter("target");
@@ -165,17 +165,19 @@ public class PerformLogin extends SubmitServerServlet {
 
 	/**
 	 * @param session
-	 * @param conn
 	 * @param student
+	 * @param isCAS TODO
+	 * @param conn
 	 * @throws SQLException
 	 */
 	public static void setUserSession(HttpSession session, Student student,
-			Connection conn) throws SQLException {
+			boolean isCAS, Connection conn) throws SQLException {
 		// look up list of student registrations for this studentPK
 		List<StudentRegistration> collection = StudentRegistration
 				.lookupAllByStudentPK(student.getStudentPK(), conn);
 
 		UserSession userSession = new UserSession();
+		userSession.setCasLogin(isCAS);
 
 		// set studentPK and superUser
 		userSession.setStudentPK(student.getStudentPK());
