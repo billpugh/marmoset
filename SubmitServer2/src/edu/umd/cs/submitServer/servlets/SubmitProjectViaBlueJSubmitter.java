@@ -76,7 +76,7 @@ public class SubmitProjectViaBlueJSubmitter extends SubmitServerServlet {
 			conn = getConnection();
 
 			// Authenticate student against the database/LDAP system
-			Student student = getIAuthenticationService().authenticateLDAP(
+			Student student = getIAuthenticationService(true).authenticateLDAP(
 					campusUID, password, conn, false);
 			if (student == null)
 				throw new ServletException("Password doesn't match username "

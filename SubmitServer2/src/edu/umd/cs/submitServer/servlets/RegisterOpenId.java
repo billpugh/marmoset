@@ -49,11 +49,11 @@ public class RegisterOpenId extends SubmitServerServlet {
 				Student admin = makeStudent(uid, firstname, lastname, student.getLoginNameForAdminAccount(), email);
 				admin.setSuperUser(true);
 				admin.insert(conn);
-				PerformLogin.setUserSession(req.getSession(), admin, conn);
+				PerformLogin.setUserSession(req.getSession(), admin, false, conn);
 			} else {
 			    Student student = Student.insertOrUpdateByUID(uid, firstname, lastname, loginName, email, conn);
 	            
-				PerformLogin.setUserSession(req.getSession(), student, conn);
+				PerformLogin.setUserSession(req.getSession(), student, false, conn);
 			}
 		} catch (SQLException e) {
 			throw new ServletException(e);
