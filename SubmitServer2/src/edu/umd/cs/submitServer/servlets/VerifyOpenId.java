@@ -93,7 +93,7 @@ public class VerifyOpenId extends SubmitServerServlet {
             "authenticate/openid/register.jsp", uid, targetUrl));
         return;
       }
-      PerformLogin.setUserSession(req.getSession(), student, conn);
+      PerformLogin.setUserSession(req.getSession(), student, false, conn);
       resp.sendRedirect(Util.urlDecode(targetUrl));
     } catch (SQLException e) {
       throw new ServletException(e);
