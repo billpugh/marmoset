@@ -106,7 +106,7 @@ public class GoogleSignin extends SubmitServerServlet {
           student =  student.lookupOrCreateAdminAccount(conn);
         }
       }
-      PerformLogin.setUserSession(request.getSession(), student, conn);
+      PerformLogin.setUserSession(request.getSession(), student, false, conn);
 
     } catch (SQLException e) {
       throw new ServletException(e);
