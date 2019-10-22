@@ -24,8 +24,9 @@
 
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!--
 <c:redirect url="/view/index.jsp" />
-
+-->
 
 <%@ taglib prefix="ss" uri="http://www.cs.umd.edu/marmoset/ss"%>
 
@@ -38,33 +39,14 @@
   <ss:loginBreadCrumb/>
 
   <ss:loginTitle/>
-  
-  <c:choose>
-     
-    <c:when test="${missingIDOrPasswordException == true}">
-      <ss:missingIdOrPasswordMessage/>
-    </c:when>
-    
-    <c:when test="${canNotFindDirectoryID == true}">
-      <ss:noSuchIdMessage/>
-    </c:when>
-  
-    <c:when test="${badPassword == true}">
-      <ss:authenticationFailedMessage/>
-    </c:when>
-  
-    <c:when test="${noSuchStudentInDB == true}">
-      <ss:noSuchStudentInDBMessage/>
-    </c:when>
 
-    <c:when test="${otherError == true}">
-      <ss:authenticationFailedMessageGeneric/>
-    </c:when>
-  
-  </c:choose>
+	<ul>
+		<li><a href="view/index.jsp">Login is now handled by UMD CAS</a></li>
+	</ul>
+	<p class="alertmessage" style="font-size: smaller;">
+		<ss:brandingProperty key="branding.login.termsOfUse" safeHtml="true" />
+	</p>
 
-  <ss:loginForm/>
-
-  <ss:footer/>
+	<ss:footer/>
   </body>
 </html>
