@@ -105,6 +105,9 @@ public class TurninProjectAction implements IObjectActionDelegate {
 		Protocol.registerProtocol("easyhttps", easyhttps);
 	}
 
+	static class RequestCanceledException extends Exception {
+	}
+	}
 	// Fields
 	private ISelection selection;
 
@@ -405,7 +408,9 @@ public class TurninProjectAction implements IObjectActionDelegate {
 		try {
 			allSubmissionProps = getAllProperties(timeOfSubmission, parent,
 					project, submitProjectFile);
-		} catch (IOException e) {
+	  } catch (RequestCanceledException e) {
+	    return;
+	  } catch (IOException e) {
 			String message = "IOException finding "
 					+ AutoCVSPlugin.SUBMITPROJECT + " and "
 					+ AutoCVSPlugin.SUBMITUSER + " files; " + cvsStatus;
@@ -657,7 +662,7 @@ public class TurninProjectAction implements IObjectActionDelegate {
 	 */
 	private Properties getAllProperties(String timeOfSubmission, Shell parent,
 			IProject project, IResource submitProjectFile) throws IOException,
-			FileNotFoundException, HttpException, CoreException {
+			FileNotFoundException, HttpException, CoreException, RequestCanceledException {
 		Properties allSubmissionProps;
 		//
 		// Load all properties contained in .submitproject file
@@ -688,14 +693,19 @@ public class TurninProjectAction implements IObjectActionDelegate {
 		if (invalidSubmitUser(userProperties)) {
 		    InputStream submitUser = null;
 			if (!authentication.equals("ldap") ){
-			   
+			   try {
 			    submitUser = getSubmitUserForOpenId(parent, allSubmissionProps);
-			} else {
+			   } catch (IOException | RuntimeException e) {
+			     if (!authentication.equals("cas")) 
+			       throw e;
+			     
+			   }
+			}
+			if (submitUser == null) {
 			PasswordDialog passwordDialog = new PasswordDialog(parent);
 			int passwordStatus = passwordDialog.open();
 			if (passwordStatus != PasswordDialog.OK) {
-				// TODO fail here in some useful way
-				Debug.print("PasswordDialog failed");
+				throw new RequestCanceledException();
 			}
 			String username = passwordDialog.getUsername();
 			String password = passwordDialog.getPassword();
@@ -779,8 +789,7 @@ public class TurninProjectAction implements IObjectActionDelegate {
         int status = submitUserDialog.open();
 
         if (status != SubmitUserDialog.OK) {
-            // TODO fail here in some useful way
-            Debug.print("SubmitUserDialog failed");
+           throw new RequestCanceledException();
         }
     
          String classAccount = submitUserDialog.getClassAccount();
