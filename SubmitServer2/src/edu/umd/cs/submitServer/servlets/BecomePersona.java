@@ -41,7 +41,7 @@ public class BecomePersona extends SubmitServerServlet {
 	  try {
 	  	conn = getConnection();
 	  	Student become = Student.getByStudentPK(Student.asPK(becomePK), conn);
-	  	PerformLogin.setUserSession(req.getSession(), become, conn);
+	  	PerformLogin.setUserSession(req.getSession(), become, false, conn);
 	  } catch (SQLException e) {
 	  	throw new ServletException(e);
     } finally {
