@@ -165,7 +165,9 @@ public class ExtractParametersFilter extends SubmitServerFilter {
         request.setAttribute("singleCourse", Boolean.FALSE);
       if (courseKey != null && projectNumber != null) {
         course = Course.lookupByCourseKey(courseKey, conn);
+        coursePK = course.getCoursePK();
         project = Project.lookupByCourseAndProjectNumber(course.getCoursePK(), projectNumber, conn);
+        projectPK = project.getProjectPK();
       }
 
       if (testRunPK != null) {
@@ -512,6 +514,10 @@ public class ExtractParametersFilter extends SubmitServerFilter {
           submissionsWithReviews = Submission.lookupSubmissionsWithReviews(project, studentRegistration, conn);
         if (submissionsWithReviews != null)
           request.setAttribute("submissionsWithReviews", submissionsWithReviews);
+      }
+      if (studentRegistration == null && student != null && course != null) {
+          studentRegistration = StudentRegistration.lookupByStudentPKAndCoursePK(student.getStudentPK(), course.getCoursePK(), conn);
+          studentRegistrationPK = studentRegistration.getStudentRegistrationPK();
       }
 
       if (student == null && studentPK != null) {
