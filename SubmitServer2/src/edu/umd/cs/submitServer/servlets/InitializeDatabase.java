@@ -113,7 +113,7 @@ public class InitializeDatabase extends GradeServerInterfaceServlet {
 			Student superuser = s.lookupOrCreateAdminAccount(conn);
 
 			// Sets required information in the user's session.
-			PerformLogin.setUserSession(session, superuser, conn);
+			PerformLogin.setUserSession(session, superuser, false, conn);
 
 
 			response.sendRedirect(request.getContextPath() + "/view/admin/index.jsp");
