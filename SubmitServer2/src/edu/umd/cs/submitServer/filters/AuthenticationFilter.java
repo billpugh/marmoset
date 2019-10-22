@@ -44,115 +44,136 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.jasig.cas.client.authentication.AttributePrincipal;
+
 import edu.umd.cs.marmoset.modelClasses.Student;
 import edu.umd.cs.submitServer.UserSession;
 import edu.umd.cs.submitServer.WebConfigProperties;
+import edu.umd.cs.submitServer.servlets.PerformLogin;
 
 /**
- * If the user is not logged in, redirect to an appropriate login url, set in the
- * {@code authentication.redirect} system property.
+ * If the user is not logged in, redirect to an appropriate login url, set in
+ * the {@code authentication.redirect} system property.
  * 
  * @author pugh
  * 
  */
 public class AuthenticationFilter extends SubmitServerFilter {
-	private static final WebConfigProperties webProperties = WebConfigProperties.get();
+  private static final WebConfigProperties webProperties = WebConfigProperties.get();
 
-	private static int getPort(URL u) throws ServletException {
-		int port = u.getPort();
-		if (port > 0)
-			return port;
-		if (u.getProtocol().equals("http"))
-			return 80;
-		if (u.getProtocol().equals("https"))
-			return 443;
-		throw new ServletException("Unhandled protocol: " + u.getProtocol());
+  private static int getPort(URL u) throws ServletException {
+    int port = u.getPort();
+    if (port > 0)
+      return port;
+    if (u.getProtocol().equals("http"))
+      return 80;
+    if (u.getProtocol().equals("https"))
+      return 443;
+    throw new ServletException("Unhandled protocol: " + u.getProtocol());
 
-	}
+  }
 
-	public static void checkReferer(HttpServletRequest request)
-			throws ServletException {
-	
-		String referer = request.getHeader("referer");
-		String requestURLString = request.getRequestURL().toString();
-        
-		if (referer == null)
-			throw new ServletException("No referer for " +   request.getMethod()
-		    + " of " + requestURLString);
-		try {
-			URL refererURL = new URL(referer);
-			 URL requestURL = new URL(requestURLString);
+  public static void checkReferer(HttpServletRequest request) throws ServletException {
 
-			if (!requestURL.getProtocol().equals(refererURL.getProtocol())
-					|| !requestURL.getHost().equals(refererURL.getHost())
-					|| getPort(requestURL) != getPort(refererURL))
+    String referer = request.getHeader("referer");
+    String requestURLString = request.getRequestURL().toString();
 
-				throw new ServletException(String.format(
-						"referer %s doesn't match %s", refererURL, requestURL));
+    if (referer == null)
+      throw new ServletException("No referer for " + request.getMethod() + " of " + requestURLString);
+    try {
+      URL refererURL = new URL(referer);
+      URL requestURL = new URL(requestURLString);
 
-		} catch (MalformedURLException e) {
-			throw new ServletException("Bad referer " + referer, e);
+      if (!requestURL.getProtocol().equals(refererURL.getProtocol())
+          || !requestURL.getHost().equals(refererURL.getHost()) || getPort(requestURL) != getPort(refererURL))
 
-		}
-	}
-	
-	private String authType;
-	
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-		super.init(filterConfig);
-		ServletContext ctx = filterConfig.getServletContext();
-		authType = webProperties.getRequiredProperty("authentication.type", "openid");
-	}
-	
-	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp,
-			FilterChain chain) throws IOException, ServletException {
-		HttpServletRequest request = (HttpServletRequest) req;
-		HttpServletResponse response = (HttpServletResponse) resp;
-		HttpSession session = request.getSession(false);
-		UserSession userSession = session == null ? null 
-				:  (UserSession) session.getAttribute(USER_SESSION);
+        throw new ServletException(String.format("referer %s doesn't match %s", refererURL, requestURL));
 
-	  String method = request.getMethod();
+    } catch (MalformedURLException e) {
+      throw new ServletException("Bad referer " + referer, e);
+
+    }
+  }
+
+  private String authType;
+
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {
+    super.init(filterConfig);
+    ServletContext ctx = filterConfig.getServletContext();
+    authType = webProperties.getRequiredProperty("authentication.type", "openid");
+  }
+
+  @Override
+  public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
+      throws IOException, ServletException {
+    HttpServletRequest request = (HttpServletRequest) req;
+    HttpServletResponse response = (HttpServletResponse) resp;
+    HttpSession session = request.getSession(false);
+    UserSession userSession = session == null ? null : (UserSession) session.getAttribute(USER_SESSION);
+
+    String method = request.getMethod();
     if (!method.equals("GET") && !method.equals("HEAD"))
-        checkReferer(request);
-    
-		if (session == null || session.isNew() || userSession == null) {
-			String login = String.format("%s/authenticate/%s/",
-			                             request.getContextPath(),
-			                             authType);
+      checkReferer(request);
+    needLogin: if (session == null || session.isNew() || userSession == null) {
+      try {
+        AttributePrincipal principal = (AttributePrincipal) request.getUserPrincipal();
+        if (principal != null) {
+          String ldapName = principal.getName();
+          if (ldapName != null) {
+            session = request.getSession(true);
+            try (Connection conn = getConnection()) {
+              Student student = Student.lookupByLoginName(ldapName, conn);
+              if (student != null) {
+                PerformLogin.setUserSession(session, student, true, conn);
+                request.setAttribute(STUDENT, student);
+                request.setAttribute("authType", authType);
+                chain.doFilter(req, resp);
+                return;
+              } else
+                throw new ServletException("No student found for " + ldapName);
 
-			// if the request is "get", save the target for a later
-			// re-direct
-			// after authentication
-			if (request.getMethod().equals("GET")) {
-				String target = request.getRequestURI();
-				if (request.getQueryString() != null)
-					target += "?" + request.getQueryString();
-				target =  URLEncoder.encode(target, "UTF-8");
-				login = login + "?target=" + target;
+            }
+          } else
+            throw new ServletException("No name provided for CAS principle");
+        }
 
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
 
-			}
+          String login = String.format("%s/authenticate/%s/PerformLogin", request.getContextPath(), authType);
 
-			response.sendRedirect(login);
-		} else {
-		  request.setAttribute("authType", authType);
-			Connection conn = null;
-			try {
-				conn = getConnection();
-				Student student = Student.getByStudentPK(
-						userSession.getStudentPK(), conn);
-				request.setAttribute(STUDENT, student);
+        // if the request is "get", save the target for a later
+        // re-direct
+        // after authentication
+        if (request.getMethod().equals("GET")) {
+          String target = request.getRequestURI();
+          if (request.getQueryString() != null)
+            target += "?" + request.getQueryString();
+          target = URLEncoder.encode(target, "UTF-8");
+          login = login + "?target=" + target;
+          System.out.println(" authentication filter sending redirect to " + login);
 
-			} catch (SQLException e) {
-				handleSQLException(e);
-				throw new ServletException(e);
-			} finally {
-				releaseConnection(conn);
-			}
-			chain.doFilter(req, resp);
-		}
-	}
+        }
+
+        response.sendRedirect(login);
+      
+    } else {
+      request.setAttribute("authType", authType);
+      Connection conn = null;
+      try {
+        conn = getConnection();
+        Student student = Student.getByStudentPK(userSession.getStudentPK(), conn);
+        request.setAttribute(STUDENT, student);
+
+      } catch (SQLException e) {
+        handleSQLException(e);
+        throw new ServletException(e);
+      } finally {
+        releaseConnection(conn);
+      }
+      chain.doFilter(req, resp);
+    }
+  }
 }
