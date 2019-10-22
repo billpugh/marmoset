@@ -161,7 +161,7 @@
 		</div>
 	</c:if>
 
-	<c:if test="${authType == 'ldap'}">
+	<c:if test="${authType == 'ldap' || authType == 'cas'}">
 	<div>
 		<h2>Register new student</h2>
 		<form id="registerOneStudentForm"
