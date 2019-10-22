@@ -49,6 +49,7 @@ import edu.umd.cs.marmoset.utilities.MarmosetUtilities;
 public class UserSession {
 	private @Student.PK Integer studentPK;
 	private boolean superUser;
+	 private boolean casLogin;
 	private boolean capabilitiesActivated = true;
 	private Set<Integer> instructorCapabilitySet = new HashSet<Integer>();
 	private Set<Integer> instructorActionCapabilitySet = new HashSet<Integer>();
@@ -60,7 +61,15 @@ public class UserSession {
 	private @Student.PK Integer superuserPK = null;
 	private @Student.PK Integer shadowAccountPK = null;
 
-	public void addInstructorCapability(Integer coursePK) {
+	public boolean isCasLogin() {
+    return casLogin;
+  }
+
+  public void setCasLogin(boolean casLogin) {
+    this.casLogin = casLogin;
+  }
+
+  public void addInstructorCapability(Integer coursePK) {
 		instructorCapabilitySet.add(coursePK);
 	}
 
