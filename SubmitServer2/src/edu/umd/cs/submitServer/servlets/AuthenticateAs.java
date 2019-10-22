@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import edu.umd.cs.marmoset.modelClasses.Student;
+import edu.umd.cs.submitServer.UserSession;
 
 public class AuthenticateAs extends SubmitServerServlet {
     @Override
@@ -40,8 +41,9 @@ public class AuthenticateAs extends SubmitServerServlet {
 
         Student student = (Student) request.getAttribute(STUDENT);
         Student user = (Student) request.getAttribute(USER);
-        
+       
         HttpSession session = request.getSession();
+        UserSession userSession = session == null ? null : (UserSession) session.getAttribute(USER_SESSION);
 
        if (!user.getCampusUID().equals(student.getCampusUID()) && !user.isSuperUser()) {
             response.sendError(403);
@@ -54,7 +56,7 @@ public class AuthenticateAs extends SubmitServerServlet {
             session.invalidate();
             session = request.getSession(true);
 
-            PerformLogin.setUserSession(session, student, conn);
+            PerformLogin.setUserSession(session, student, userSession.isCasLogin(), conn);
 
         } catch (SQLException e) {
             handleSQLException(e);
