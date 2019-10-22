@@ -66,6 +66,8 @@ public class SyncStudents extends GradeServerInterfaceServlet {
           }
         }
       }
+      writer.println("Synchronized all students");
+      writer.println();
       writer.flush();
       if (true) {
         Collection<Course> courses = Course.lookupAll(conn);
@@ -115,7 +117,8 @@ public class SyncStudents extends GradeServerInterfaceServlet {
         String email = rs.getString(col++);
 
         if (lastname == null || firstname == null || loginName == null || email == null) {
-          writer.printf("Got null value for %s %s (%s) %s %s, email %s%n", firstname, lastname, student.getCampusUID(),
+          writer.printf("Got null value for %s %s (%s) %s, email %s%n", 
+              firstname, lastname, student.getCampusUID(),
               student.getLoginName(), email);
 
         } else {
