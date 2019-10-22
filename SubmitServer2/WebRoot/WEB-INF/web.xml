@@ -6,6 +6,94 @@
   <session-config>
     <tracking-mode>COOKIE</tracking-mode>
   </session-config>
+
+	<!-- Start CAS configuration -->
+	<context-param>
+		<param-name>serverName</param-name>
+	
+		<param-value>http://localhost:8080</param-value>
+		 
+			<!--
+			<param-value>https://submit.cs.umd.edu</param-value>
+			 -->
+	</context-param>
+	<!-- https://secure.identity.ucsb.edu/inside/doku.php/sso_java -->
+	<!-- CAS Single Sign Out Filter -->
+	<filter>
+		<filter-name>CAS Single Sign Out Filter</filter-name>
+		<filter-class>org.jasig.cas.client.session.SingleSignOutFilter</filter-class>
+		<init-param>
+			<param-name>casServerUrlPrefix</param-name>
+			<param-value>https://shib.idm.umd.edu/shibboleth-idp/profile/cas</param-value>
+		</init-param>
+	</filter>
+	<!-- CAS Authentication Filter -->
+	<filter>
+		<filter-name>CAS Authentication Filter</filter-name>
+		<filter-class>org.jasig.cas.client.authentication.AuthenticationFilter</filter-class>
+		<init-param>
+			<param-name>casServerLoginUrl</param-name>
+			<param-value>https://login.umd.edu/cas/login</param-value>
+		</init-param>
+	</filter>
+	<!-- CAS Validation Filter -->
+	<filter>
+		<filter-name>CAS Validation Filter</filter-name>
+		<filter-class>org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter</filter-class>
+		<init-param>
+			<param-name>casServerUrlPrefix</param-name>
+			<param-value>https://login.umd.edu/cas</param-value>
+		</init-param>
+		<init-param>
+			<param-name>redirectAfterValidation</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>useSession</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<!-- CAS HttpServletRequest Wrapper Filter -->
+	<filter>
+		<filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
+		<filter-class>org.jasig.cas.client.util.HttpServletRequestWrapperFilter</filter-class>
+	</filter>
+
+	<!-- order of CAS filter mappings is important -->
+	<filter-mapping>
+		<filter-name>CAS Single Sign Out Filter</filter-name>
+		<url-pattern>/AuthTest</url-pattern>
+		<url-pattern>/authTest.jsp</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>CAS Authentication Filter</filter-name>
+    		<url-pattern>/authenticate/cas/PerformLogin</url-pattern>
+			<url-pattern>/authenticate/cas/InitializeDatabase</url-pattern>
+		<url-pattern>/view/CASLogin.jsp</url-pattern>
+		<url-pattern>/AuthTest</url-pattern>
+		<url-pattern>/authTest.jsp</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>CAS Validation Filter</filter-name>
+    		<url-pattern>/authenticate/cas/PerformLogin</url-pattern>
+			<url-pattern>/authenticate/cas/InitializeDatabase</url-pattern>
+	<url-pattern>/view/CASLogin.jsp</url-pattern>
+		<url-pattern>/AuthTest</url-pattern>
+		<url-pattern>/authTest.jsp</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
+    		<url-pattern>/authenticate/cas/PerformLogin</url-pattern>
+			<url-pattern>/authenticate/cas/InitializeDatabase</url-pattern>
+	<url-pattern>/view/CASLogin.jsp</url-pattern>
+		<url-pattern>/AuthTest</url-pattern>
+		<url-pattern>/authTest.jsp</url-pattern>
+	</filter-mapping>
+
+	<listener>
+		<listener-class>org.jasig.cas.client.session.SingleSignOutHttpSessionListener</listener-class>
+	</listener>
+	<!-- End CAS configuration -->
   <filter>
     <filter-name>SetCharacterEncodingFilter</filter-name>
     <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
@@ -199,21 +287,9 @@
   <filter-mapping>
     <filter-name>AuthenticationFilter</filter-name>
     <url-pattern>/view/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>AuthenticationFilter</filter-name>
     <url-pattern>/data/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>AuthenticationFilter</filter-name>
     <url-pattern>/action/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>AuthenticationFilter</filter-name>
     <url-pattern>/docs/instructor/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>AuthenticationFilter</filter-name>
     <url-pattern>/status/*</url-pattern>
   </filter-mapping>
   <filter>
@@ -938,6 +1014,10 @@
     <servlet-class> edu.umd.cs.submitServer.servlets.PerformLogin </servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>PerformCASLogin</servlet-name>
+    <servlet-class> edu.umd.cs.submitServer.servlets.PerformCASLogin </servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>Fixup</servlet-name>
     <servlet-class> edu.umd.cs.submitServer.servlets.Fixup </servlet-class>
   </servlet>
@@ -1264,6 +1344,10 @@
   <servlet-mapping>
     <servlet-name>MakeSuperuser</servlet-name>
     <url-pattern>/action/admin/MakeSuperuser</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>PerformCASLogin</servlet-name>
+    <url-pattern>/authenticate/cas/PerformLogin</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>PerformLogin</servlet-name>
@@ -1638,6 +1722,14 @@
     <url-pattern>/authenticate/InitializeDatabase</url-pattern>
   </servlet-mapping>
   <servlet>
+    <servlet-name>InitializeDatabaseCAS</servlet-name>
+    <servlet-class> edu.umd.cs.submitServer.servlets.InitializeDatabaseCAS </servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InitializeDatabaseCAS</servlet-name>
+    <url-pattern>/authenticate/cas/InitializeDatabase</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <servlet-name>BecomePersona</servlet-name>
     <servlet-class>edu.umd.cs.submitServer.servlets.BecomePersona</servlet-class>
   </servlet>
@@ -1806,3 +1898,5 @@
   </filter-mapping>
 
 </web-app>
+
+
