@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import edu.umd.cs.marmoset.modelClasses.Project;
+import edu.umd.cs.marmoset.modelClasses.Student;
 import edu.umd.cs.marmoset.modelClasses.StudentRegistration;
 import edu.umd.cs.marmoset.modelClasses.StudentSubmitStatus;
 
@@ -49,10 +50,16 @@ public class SubmitStatusFilter extends SubmitServerFilter {
         HttpServletResponse response = (HttpServletResponse) resp;
         Project project = (Project) request.getAttribute("project");
         StudentRegistration studentRegistration = (StudentRegistration) request.getAttribute(STUDENT_REGISTRATION);
-        StudentSubmitStatus submitStatus = (StudentSubmitStatus) request.getAttribute(STUDENT_SUBMIT_STATUS);
+        Student student = (Student) request.getAttribute(STUDENT);
+         StudentSubmitStatus submitStatus = (StudentSubmitStatus) request.getAttribute(STUDENT_SUBMIT_STATUS);
         Connection conn = null;
-        if (studentRegistration == null || project == null)
-            throw new NullPointerException();
+        if (project == null)
+          throw new NullPointerException("No project for submitStatusRequest");
+        if (studentRegistration == null)
+            throw new NullPointerException("No studentRegistration for submitStatusRequest; " 
+                + (student == null ? " student is null, " : "student is non-null, "));
+                
+        
        
         if (submitStatus == null) {
             boolean transactionSuccess = false;
